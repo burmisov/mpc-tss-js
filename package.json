@@ -1,0 +1,21 @@
+{
+  "name": "tss",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --import tsx --test src/**/*.test.ts"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.2",
+    "@types/node": "^20.9.3",
+    "tsx": "^4.2.0",
+    "typescript": "^5.3.2"
+  },
+  "dependencies": {
+    "bigint-crypto-utils": "^3.3.0"
+  }
+}
