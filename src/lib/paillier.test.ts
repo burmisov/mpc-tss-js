@@ -1,6 +1,5 @@
 import { describe, it } from "node:test";
 import assert from 'node:assert/strict';
-
 import { randBetween } from 'bigint-crypto-utils';
 
 import {
@@ -9,11 +8,15 @@ import {
   paillierDecrypt,
   paillierAdd,
   paillierMultiply,
+  randomPaillierPrimes,
+  validatePaillierPrime,
 } from "./paillier.js";
 
-describe("paillier", () => {
-  const p = BigInt('0xfd90167f42443623d284ea828fb13e374cbf73e16cc6755422b97640ab7fc77fdaf452b4f3a2e8472614eee11cc8eaf48783ce2b4876a3bb72e9acf248e86daa5ce4d5a88e77352bcba30a998cd8b0ad2414d43222e3ba56d82523e2073730f817695b34a4a26128d5e030a7307d3d04456dc512ebb8b53fdbd1dfc07662099b');
-  const q = BigInt('0xdb531c32024a262a0df9603e48c79e863f9539a82b8619480289ec38c3664cc63e3ac2c04888827559ffdbcb735a8d2f1d24baf910643ce819452d95caffb686e6110057985e93605de89e33b99c34140ef362117f975a5056bff14a51c9cd16a4961be1f02c081c7ad8b2a5450858023a157afa3c3441e8e00941f8d33ed6b7');
+describe("Paillier encryption", async () => {
+  const p = 179592502110335963336347735108907147317760904272746519157588428198851642173043932077383231024080457777437444199308940940528740158020956955835017958704625931695110457545843284994471316520797998498062474296013358438785968440081020607611888287234488233606613994066898948321434201732737366068220153564935475802567n;
+  const q = 144651337722999591357894368476987413731327694772730408677878934803626218325763401733049627551150267745019646164141178748986827450041894571742897062718616997949877925740444144291875968298065299373438319317040746398994377200405476019627025944607850551945311780131978961657839712750089596117856255513589953855963n;
+  await validatePaillierPrime(p);
+  await validatePaillierPrime(q);
   const paillierSecretKey = paillierSecretKeyFromPrimes(p, q);
   const paillierPublicKey = paillierSecretKey.publicKey;
 
@@ -61,7 +64,7 @@ describe("paillier", () => {
     );
   }
 
-  it('should validate ciphertext', () => {
+  it('validates ciphertext', () => {
     assert.throws(
       () => {
         paillierDecrypt(paillierSecretKey, 0n);
@@ -95,14 +98,14 @@ describe("paillier", () => {
     );
   });
 
-  it("should encrypt and decrypt", () => {
+  it("encrypts and decrypts", () => {
     for (let i = 0; i < 10; i++) {
       const message = randBetween(2n ** 64n, 1n);
       encryptDecryptRoundTripTest(message);
     }
   });
 
-  it('should perform homomorphic addition', () => {
+  it('performs homomorphic addition', () => {
     for (let i = 0; i < 10; i++) {
       const messageA = randBetween(2n ** 64n, 1n);
       const messageB = randBetween(2n ** 64n, 1n);
@@ -110,11 +113,18 @@ describe("paillier", () => {
     }
   });
 
-  it('should perform homomorphic multiplication', () => {
+  it('performs homomorphic multiplication', () => {
     for (let i = 0; i < 10; i++) {
       const message = randBetween(2n ** 64n, 1n);
       const scalar = randBetween(2n ** 64n, 1n);
       homomorphicMultiplyTest(message, scalar);
     }
+  });
+
+  it('generates a secret key from random primes', async () => {
+    const { p, q } = await randomPaillierPrimes();
+    const secretKey = paillierSecretKeyFromPrimes(p, q);
+    validatePaillierPrime(p);
+    validatePaillierPrime(q);
   });
 });
