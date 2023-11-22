@@ -122,7 +122,7 @@ const secretKeyConfigC: PartySecretKeyConfigSerialized = {
   },
 }
 
-describe('signature', { only: true }, () => {
+describe('signature', () => {
   const checkPaillierFixture = (
     publicSerialized: PaillierPublicKeySerialized,
     privateSerialized: PaillierSecretKeySerialized,

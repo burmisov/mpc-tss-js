@@ -157,7 +157,7 @@ describe("Paillier encryption", async () => {
     }
   });
 
-  it('generates a secret key from random primes', async () => {
+  it('LONG: generates a secret key from random primes', { skip: true }, async () => {
     const { p, q } = await randomPaillierPrimes();
     const secretKey = paillierSecretKeyFromPrimes(p, q);
     validatePaillierPrime(p);

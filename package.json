@@ -1,11 +1,11 @@
 {
-  "name": "tss",
+  "name": "mpc-tss-js",
   "type": "module",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node --import tsx --test src/**/*.test.ts"
+    "test": "node --import tsx --test src/**/*.test.ts src/**/**/*.test.ts"
   },
   "author": "",
   "license": "MIT",
