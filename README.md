@@ -19,7 +19,11 @@ Current status: some playing around with architecture and sources of inspiration
 - [ ] Keyconfig (party setup) data / Rounds data
 - [ ] ECDSA with secp256k1 utils (use/wrap @noble/curves ?)
 - [ ] Pedersen
+- [ ] ElGamal
 - [ ] Lagrange
+- [ ] BIP32
+- [ ] Oblivious Transfer
+- [ ] MTA
 - [ ] ZK Proofs
 - [ ] Signing round data and implementations
 - [ ] MILESTONE 2: Implement a key generation ceremony; generate valid party setups and create a valid signature
