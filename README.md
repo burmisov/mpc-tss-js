@@ -10,11 +10,27 @@ https://eprint.iacr.org/2021/060
 
 Current status: some playing around with architecture and sources of inspiration.
 
-TODO (to be expanded):
-* [ ] Create a proper readme
-* [ ] Lay out motication and prior art
-* [ ] Lay out the goals and the plan
-* [ ] Do it :)
+## TODO
+
+### Features
+
+- [ ] MILESTONE 1: Create a valid signature via "offline" ceremony given pre-created party setups
+- [x] Paillier encryption scheme internal library
+- [ ] TODO: More items coming
+- [ ] MILESTONE 2: Implement a key generation ceremony; generate valid party setups and create a valid signature
+- [ ] MILESTONE 3+: Review, add Schnorr and Ed25519 signatures to the scope, implement key refresh ceremony, etc.
+
+### General
+
+- [ ] Create a proper readme
+- [ ] Add a workflow to test and publish
+- [ ] Configure my system for signed commits
+
+### Doc
+
+- [ ] Link to my instrumented multi-party-sig fork
+- [ ] Lay out motication and prior art
+- [ ] Lay out the goals and the plan
 
 ## Plans and Acknowledgements
 
