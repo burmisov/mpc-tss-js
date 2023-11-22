@@ -1,28 +1,32 @@
+/* mpc-tss-js - MIT License (c) 2023 Sergey Burmisov (burmisov.com) */
+
+/*
+  https://en.wikipedia.org/wiki/Paillier_cryptosystem
+
+  Original paper by Pascal Paillier:
+  https://doi.org/10.1007%2F3-540-48910-X_16
+*/
+
+// TODO: Add proper comments
+// TODO: Implement decryption with randomness
+// TODO: Optimize using known values of p and q
+
 import {
-  modInv, bitLength, randBitsSync, gcd, abs, modPow, modMultiply,
-  isProbablyPrime,
-  randBytesSync,
+  modInv, bitLength, gcd, abs, modPow, modMultiply,
+  isProbablyPrime, randBytesSync,
 } from 'bigint-crypto-utils';
 
 type PaillierSecretKey = {
-  // p, q such that N = p⋅q
   p: bigint;
   q: bigint;
-
-  // phi = ϕ = (p-1)(q-1) cached
   phi: bigint;
-  // phiInv = ϕ⁻¹ mod N cached
   phiInv: bigint;
-
   publicKey: PaillierPublicKey;
 }
 
 type PaillierPublicKey = {
-  // n = p⋅q
   n: bigint;
-  // nSquared = n²
   nSquared: bigint;
-  // n + 1 cached
   nPlusOne: bigint;
 }
 

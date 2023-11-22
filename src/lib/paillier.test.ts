@@ -1,3 +1,9 @@
+/* mpc-tss-js - MIT License (c) 2023 Sergey Burmisov (burmisov.com) */
+
+// TODO: Create a "short test" path that skips key generation
+// TODO: Create a test coverage report
+// TODO: Add a proper benchmarking suite
+
 import { describe, it } from "node:test";
 import assert from 'node:assert/strict';
 import { randBetween } from 'bigint-crypto-utils';
