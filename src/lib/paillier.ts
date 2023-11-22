@@ -16,7 +16,7 @@ import {
   isProbablyPrime, randBytesSync,
 } from 'bigint-crypto-utils';
 
-type PaillierSecretKey = {
+export type PaillierSecretKey = {
   p: bigint;
   q: bigint;
   phi: bigint;
@@ -24,10 +24,36 @@ type PaillierSecretKey = {
   publicKey: PaillierPublicKey;
 }
 
-type PaillierPublicKey = {
+export type PaillierPublicKey = {
   n: bigint;
   nSquared: bigint;
   nPlusOne: bigint;
+}
+
+export type PaillierSecretKeySerialized = {
+  pHex: string;
+  qHex: string;
+};
+
+export type PaillierPublicKeySerialized = {
+  nHex: string;
+};
+
+export const paillierSecretKeyFromSerialized = (
+  secretKeySerialized: PaillierSecretKeySerialized
+): PaillierSecretKey => {
+  const p = BigInt('0x' + secretKeySerialized.pHex);
+  const q = BigInt('0x' + secretKeySerialized.qHex);
+  return paillierSecretKeyFromPrimes(p, q);
+}
+
+export const paillierPublicKeyFromSerialized = (
+  publicKeySerialized: PaillierPublicKeySerialized
+): PaillierPublicKey => {
+  const n = BigInt('0x' + publicKeySerialized.nHex);
+  const nSquared = n * n;
+  const nPlusOne = n + 1n;
+  return { n, nSquared, nPlusOne };
 }
 
 export const paillierSecretKeyFromPrimes = (p: bigint, q: bigint): PaillierSecretKey => {

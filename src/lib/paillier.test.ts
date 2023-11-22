@@ -16,6 +16,9 @@ import {
   paillierMultiply,
   randomPaillierPrimes,
   validatePaillierPrime,
+  PaillierSecretKeySerialized,
+  paillierSecretKeyFromSerialized,
+  paillierPublicKeyFromSerialized,
 } from "./paillier.js";
 
 describe("Paillier encryption", async () => {
@@ -101,6 +104,33 @@ describe("Paillier encryption", async () => {
       },
       { message: 'INVALID_CIPHERTEXT' },
       'decrypting N^2 should fail',
+    );
+  });
+
+  it('deserializes keys', () => {
+    const secretKeySerialized: PaillierSecretKeySerialized = {
+      pHex: p.toString(16),
+      qHex: q.toString(16),
+    };
+    const secretKeyDeserialized = paillierSecretKeyFromSerialized(
+      secretKeySerialized
+    );
+    assert.deepStrictEqual(
+      paillierSecretKey,
+      secretKeyDeserialized,
+      'Deserialized secret key does not match original'
+    );
+
+    const publicKeySerialized = {
+      nHex: paillierPublicKey.n.toString(16),
+    };
+    const publicKeyDeserialized = paillierPublicKeyFromSerialized(
+      publicKeySerialized
+    );
+    assert.deepStrictEqual(
+      paillierPublicKey,
+      publicKeyDeserialized,
+      'Deserialized public key does not match original'
     );
   });
 
