@@ -4,6 +4,7 @@ import { secp256k1 } from '@noble/curves/secp256k1';
 
 import { AffinePointSerialized, PartyPublicKeyConfigSerialized, PartySecretKeyConfigSerialized } from "../keyConfig.js";
 import { PaillierPublicKeySerialized, PaillierSecretKeySerialized, paillierPublicKeyFromSerialized, paillierSecretKeyFromSerialized } from '../paillier.js';
+import { PedersenParameters, PedersenParametersSerialized, pedersenParametersFromSerialized, pedersenValidateParameters } from '../pedersen.js';
 
 const publicKeyConfigA: PartyPublicKeyConfigSerialized = {
   partyId: 'a',
@@ -155,6 +156,15 @@ describe('signature', () => {
     );
   }
 
+  const checkPedersenFixture = (
+    pedersenParametersSerialized: PedersenParametersSerialized,
+  ) => {
+    const pedersenParams = pedersenParametersFromSerialized(
+      pedersenParametersSerialized,
+    );
+    pedersenValidateParameters(pedersenParams);
+  }
+
   it('fixtures valid', () => {
     checkPaillierFixture(
       publicKeyConfigA.paillier, secretKeyConfigA.paillier,
@@ -186,6 +196,8 @@ describe('signature', () => {
       publicKeyConfigA.elgamal, secretKeyConfigA.elgamalHex,
     );
 
-    // TODO: check pedersen?
+    checkPedersenFixture(publicKeyConfigA.pedersen);
+    checkPedersenFixture(publicKeyConfigB.pedersen);
+    checkPedersenFixture(publicKeyConfigC.pedersen);
   });
 });
