@@ -1,4 +1,8 @@
-import { PartyPublicKeyConfig, PartyPublicKeyConfigSerialized, PartySecretKeyConfigSerialized } from "../keyConfig.js";
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+
+import { PartyPublicKeyConfigSerialized, PartySecretKeyConfigSerialized } from "../keyConfig.js";
+import { PaillierPublicKeySerialized, PaillierSecretKeySerialized, paillierPublicKeyFromSerialized, paillierSecretKeyFromSerialized } from '../paillier.js';
 
 const publicKeyConfigA: PartyPublicKeyConfigSerialized = {
   partyId: 'a',
@@ -116,3 +120,32 @@ const secretKeyConfigC: PartySecretKeyConfigSerialized = {
     c: publicKeyConfigC,
   },
 }
+
+describe('signature', { only: true }, () => {
+  const checkPaillierFixtures = (
+    publicSerialized: PaillierPublicKeySerialized,
+    privateSerialized: PaillierSecretKeySerialized,
+  ) => {
+    const pub = paillierPublicKeyFromSerialized(publicSerialized);
+    const secret = paillierSecretKeyFromSerialized(privateSerialized);
+    assert.deepStrictEqual(
+      pub, secret.publicKey, 'public key does not match secret key',
+    );
+  }
+
+  it('fixtures valid', () => {
+    checkPaillierFixtures(
+      publicKeyConfigA.paillier, secretKeyConfigA.paillier,
+    );
+    checkPaillierFixtures(
+      publicKeyConfigB.paillier, secretKeyConfigB.paillier,
+    );
+    checkPaillierFixtures(
+      publicKeyConfigC.paillier, secretKeyConfigC.paillier,
+    );
+
+    // TODO: check ecdsa
+    // TODO: check elgamal
+    // TODO: check pedersen?
+  });
+});
