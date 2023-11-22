@@ -16,7 +16,8 @@ Current status: some playing around with architecture and sources of inspiration
 
 - [ ] MILESTONE 1: Create a valid signature via "offline" ceremony given pre-created party setups
 - [x] Paillier encryption scheme internal library (minimal)
-- [ ] Keyconfig (party setup) data / Rounds data
+- [x] Keyconfig (party setup) data
+- [ ] Devise a predictable Error model
 - [ ] ECDSA with secp256k1 utils (use/wrap @noble/curves ?)
 - [ ] Pedersen
 - [ ] ElGamal
