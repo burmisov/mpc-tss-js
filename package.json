@@ -16,6 +16,7 @@
     "typescript": "^5.3.2"
   },
   "dependencies": {
+    "@noble/curves": "^1.2.0",
     "bigint-crypto-utils": "^3.3.0"
   }
 }
