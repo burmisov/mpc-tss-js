@@ -1,7 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { secp256k1 } from '@noble/curves/secp256k1';
 
-import { PartyPublicKeyConfigSerialized, PartySecretKeyConfigSerialized } from "../keyConfig.js";
+import { AffinePointSerialized, PartyPublicKeyConfigSerialized, PartySecretKeyConfigSerialized } from "../keyConfig.js";
 import { PaillierPublicKeySerialized, PaillierSecretKeySerialized, paillierPublicKeyFromSerialized, paillierSecretKeyFromSerialized } from '../paillier.js';
 
 const publicKeyConfigA: PartyPublicKeyConfigSerialized = {
@@ -122,7 +123,7 @@ const secretKeyConfigC: PartySecretKeyConfigSerialized = {
 }
 
 describe('signature', { only: true }, () => {
-  const checkPaillierFixtures = (
+  const checkPaillierFixture = (
     publicSerialized: PaillierPublicKeySerialized,
     privateSerialized: PaillierSecretKeySerialized,
   ) => {
@@ -133,19 +134,58 @@ describe('signature', { only: true }, () => {
     );
   }
 
+  const checkCurvePointFixture = (
+    publicSerialized: AffinePointSerialized,
+    privateHex: string,
+  ) => {
+    const xbig = BigInt('0x' + publicSerialized.xHex);
+    const ybig = BigInt('0x' + publicSerialized.yHex);
+    const point = secp256k1.ProjectivePoint.fromAffine({
+      x: xbig,
+      y: ybig,
+    });
+    point.assertValidity();
+    const scalar = BigInt('0x' + privateHex);
+    const mul = secp256k1.ProjectivePoint.BASE.multiply(scalar);
+    assert.strictEqual(
+      xbig, mul.x, 'public key does not match secret key',
+    );
+    assert.strictEqual(
+      ybig, mul.y, 'public key does not match secret key',
+    );
+  }
+
   it('fixtures valid', () => {
-    checkPaillierFixtures(
+    checkPaillierFixture(
       publicKeyConfigA.paillier, secretKeyConfigA.paillier,
     );
-    checkPaillierFixtures(
+    checkPaillierFixture(
       publicKeyConfigB.paillier, secretKeyConfigB.paillier,
     );
-    checkPaillierFixtures(
+    checkPaillierFixture(
       publicKeyConfigC.paillier, secretKeyConfigC.paillier,
     );
 
-    // TODO: check ecdsa
-    // TODO: check elgamal
+    checkCurvePointFixture(
+      publicKeyConfigA.ecdsa, secretKeyConfigA.ecdsaHex,
+    );
+    checkCurvePointFixture(
+      publicKeyConfigB.ecdsa, secretKeyConfigB.ecdsaHex,
+    );
+    checkCurvePointFixture(
+      publicKeyConfigC.ecdsa, secretKeyConfigC.ecdsaHex,
+    );
+
+    checkCurvePointFixture(
+      publicKeyConfigA.elgamal, secretKeyConfigA.elgamalHex,
+    );
+    checkCurvePointFixture(
+      publicKeyConfigA.elgamal, secretKeyConfigA.elgamalHex,
+    );
+    checkCurvePointFixture(
+      publicKeyConfigA.elgamal, secretKeyConfigA.elgamalHex,
+    );
+
     // TODO: check pedersen?
   });
 });
