@@ -2,9 +2,11 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { secp256k1 } from '@noble/curves/secp256k1';
 
-import { AffinePointSerialized, PartyPublicKeyConfigSerialized, PartySecretKeyConfigSerialized } from "../keyConfig.js";
+import { AffinePointSerialized } from '../common.types.js';
+import { PartyPublicKeyConfigSerialized, PartySecretKeyConfigSerialized } from "../keyConfig.js";
 import { PaillierPublicKeySerialized, PaillierSecretKeySerialized, paillierPublicKeyFromSerialized, paillierSecretKeyFromSerialized } from '../paillier.js';
-import { PedersenParameters, PedersenParametersSerialized, pedersenParametersFromSerialized, pedersenValidateParameters } from '../pedersen.js';
+import { PedersenParametersSerialized, pedersenParametersFromSerialized, pedersenValidateParameters } from '../pedersen.js';
+import { SignRequestSerialized, deserializeSignRequest } from './sign.js';
 
 const publicKeyConfigA: PartyPublicKeyConfigSerialized = {
   partyId: 'a',
@@ -123,7 +125,14 @@ const secretKeyConfigC: PartySecretKeyConfigSerialized = {
   },
 }
 
-describe('signature', () => {
+const signRequestSerialized: SignRequestSerialized = {
+  messageHex: '68656c6c6f', // 'hello',
+  signerIds: ['a', 'b'], // [ 'c' ]
+}
+
+describe('sign', () => {
+  const signRequest = deserializeSignRequest(signRequestSerialized);
+
   const checkPaillierFixture = (
     publicSerialized: PaillierPublicKeySerialized,
     privateSerialized: PaillierSecretKeySerialized,

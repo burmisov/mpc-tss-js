@@ -1,12 +1,8 @@
-import { secp256k1 } from '@noble/curves/secp256k1';
-
+import { AffinePoint, AffinePointSerialized } from './common.types.js';
 import { PaillierPublicKey, PaillierPublicKeySerialized, PaillierSecretKey, PaillierSecretKeySerialized } from './paillier.js';
 import { PedersenParameters, PedersenParametersSerialized } from './pedersen.js';
 
-// Extract some types from @noble/curves because they're not exported
-type AffinePoint = Parameters<typeof secp256k1.ProjectivePoint.fromAffine>[0];
-
-type PartyId = string;
+export type PartyId = string;
 
 export type PartyPublicKeyConfig = {
   partyId: PartyId,
@@ -15,11 +11,6 @@ export type PartyPublicKeyConfig = {
   paillier: PaillierPublicKey,
   pedersen: PedersenParameters,
 };
-
-export type AffinePointSerialized = {
-  xHex: string,
-  yHex: string,
-}
 
 export type PartyPublicKeyConfigSerialized = {
   partyId: string,
