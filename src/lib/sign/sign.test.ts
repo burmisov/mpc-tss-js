@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { secp256k1 } from '@noble/curves/secp256k1';
 
 import { AffinePointSerialized } from '../common.types.js';
-import { PartyPublicKeyConfigSerialized, PartySecretKeyConfigSerialized } from "../keyConfig.js";
+import { PartyPublicKeyConfigSerialized, PartySecretKeyConfigSerialized, deserializePartySecretKeyConfig } from "../keyConfig.js";
 import { PaillierPublicKeySerialized, PaillierSecretKeySerialized, paillierPublicKeyFromSerialized, paillierSecretKeyFromSerialized } from '../paillier.js';
 import { PedersenParametersSerialized, pedersenParametersFromSerialized, pedersenValidateParameters } from '../pedersen.js';
-import { SignRequestSerialized, deserializeSignRequest } from './sign.js';
+import { SignRequestSerialized, deserializeSignRequest, newSignSession } from './sign.js';
 
 const publicKeyConfigA: PartyPublicKeyConfigSerialized = {
   partyId: 'a',
@@ -78,8 +78,8 @@ const secretKeyConfigA: PartySecretKeyConfigSerialized = {
     pHex: 'dfe9d014636ed4e0f0955d0394690ce78eb76ebbc3dac4eb7a14dabc183258d229ba1fadc7c16dc649f917b8a116575afe0acf2569c0ea01c47c7eda42ed2647952db3b8776568edcc0848294aa5b00df89009b28e5f29543c11fbdd12ffe3b3ccb0ab0008993c76eb31fd9b8841114e9c866308733f1c491cf5cbefe6e240f7',
     qHex: 'efbaca1ef12377a7df2af12c77eea0b68ca8cca257f1f2b68e2c053a0f56c4f01f4f9b98012d46fedc5737e29ffec2070de21e222ebc439d16986e3c94a91cc2d3f715583a1af67cb689048cc606a98096aa84ca61185a614e970bb8ff7c2ac34e7e84fb86f288d6975320acce41e180d17af96b0780b5b05c71171161028d4f',
   },
-  ridHex: '', // TODO
-  chainKeyHex: '', // TODO
+  ridHex: '00', // TODO
+  chainKeyHex: '00', // TODO
   publicPartyData: {
     a: publicKeyConfigA,
     b: publicKeyConfigB,
@@ -97,8 +97,8 @@ const secretKeyConfigB: PartySecretKeyConfigSerialized = {
     pHex: 'eba66341ce03f706c9251018ecaca99991f3fa0d20436c36acc3daadb9ff27ecdee0bc91426081714256d4770f8a9c30fe877c5ee76199b7d2f4b5146e64e55f297611868327accfe022cbe58c9cc4c3535757622f426329566628109f9d2b6f68e9570db2826914cf8fbd49ac7adf063e20543e465ff1a8a27a8251c1e9fb23',
     qHex: 'c0d53c2d693dd4164a71f8de569aee28bd52549c2352d2d505ea3be9b5d277a6d002a8152af219fd0e79eaa2158daf5886a9bc55781b0d78eaca224819d847f61882d84304b65f243f1be10456844e359562fbeeb25a81af5abaa3ebdbe561f0dd56162ecafacf6def08250248b3082928b9e2da69abc236f78372915418be0f',
   },
-  ridHex: '', // TODO
-  chainKeyHex: '', // TODO
+  ridHex: '00', // TODO
+  chainKeyHex: '00', // TODO
   publicPartyData: {
     a: publicKeyConfigA,
     b: publicKeyConfigB,
@@ -116,8 +116,8 @@ const secretKeyConfigC: PartySecretKeyConfigSerialized = {
     pHex: 'd6622f55599636fbec8111420819edaa025542f3121c2594d4927520ab6ac045733a8902d90ca3dfce307adc5a00dc542c46a69d3fb8fe6818e27cc0150871b5729b799401f09523955eb83c4c56bcd3894adc3583f2b2f40549c021f0b9e9ed09d0e0bc1079db06885080edb6ddcd77339f74a502e1fedaf1f5082726381dd7',
     qHex: 'df8723a5e503690b3783a7d27a9a8081a650c102690b79b3d96c372a2514cc023bef218127750c7da5eb2403c0e73d45b4ecfe63df5860bc33792c767136f65c663cf2064caf6b1f1efeacede59ac57dbe1f53b01e31a0cb6026da00fb1702fa312992722e58036fcbe5d4f639d60fe3f111cec7e8364ae3a8441f7f36ab1b3f',
   },
-  ridHex: '', // TODO
-  chainKeyHex: '', // TODO
+  ridHex: '00', // TODO
+  chainKeyHex: '00', // TODO
   publicPartyData: {
     a: publicKeyConfigA,
     b: publicKeyConfigB,
@@ -127,7 +127,7 @@ const secretKeyConfigC: PartySecretKeyConfigSerialized = {
 
 const signRequestSerialized: SignRequestSerialized = {
   messageHex: '68656c6c6f', // 'hello',
-  signerIds: ['a', 'b'], // [ 'c' ]
+  signerIds: ['a', 'b', 'c'],
 }
 
 describe('sign', () => {
@@ -208,5 +208,16 @@ describe('sign', () => {
     checkPedersenFixture(publicKeyConfigA.pedersen);
     checkPedersenFixture(publicKeyConfigB.pedersen);
     checkPedersenFixture(publicKeyConfigC.pedersen);
+  });
+
+  it('prepares session', () => {
+    const partyConfigA = deserializePartySecretKeyConfig(secretKeyConfigA);
+    const { session, inputForRound1 } = newSignSession(signRequest, partyConfigA);
+
+    // TODO
+    // console.log('session', session);
+    // console.log('inputForRound1', inputForRound1);
+
+    // console.log(`>>> ${inputForRound1.publicKey.x.toString(16)}${inputForRound1.publicKey.y.toString(16)}`);
   });
 });

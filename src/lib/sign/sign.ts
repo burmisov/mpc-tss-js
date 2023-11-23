@@ -7,6 +7,9 @@ import { PaillierPublicKey, PaillierSecretKey } from "../paillier.js"
 import { PedersenParameters } from "../pedersen.js"
 import { ZkEncProof } from '../zk.js';
 import { secp256k1 } from '@noble/curves/secp256k1';
+import { lagrange } from '../lagrange.js';
+
+const Fp = secp256k1.CURVE.Fp;
 
 type Hasher = ReturnType<typeof blake3.create>;
 
@@ -93,13 +96,17 @@ export const newSignSession = (
   session: SignPartySession,
   inputForRound1: SignPartyInputRound1,
 } => {
-  const publicKey = secp256k1.ProjectivePoint.ZERO; // TODO: modify with lagrange
+  const lag = lagrange(signRequest.signerIds);
+  let publicKey = secp256k1.ProjectivePoint.ZERO;
 
   // TODO: see if can just reuse keyConfig.publicPartyData
-  const partiesPublic = Object.fromEntries(
+  const partiesPublic: SignPartyInputRound1['partiesPublic'] = Object.fromEntries(
     Object.entries(keyConfig.publicPartyData).map(([partyId, partyData]) => {
+      const point = secp256k1.ProjectivePoint.fromAffine(partyData.ecdsa);
+      const scaledPoint = point.multiply(lag[partyId]);
+      publicKey = publicKey.add(scaledPoint);
       return [partyId, {
-        ecdsa: partyData.ecdsa, // TODO: modify with lagrange
+        ecdsa: scaledPoint.toAffine(),
         paillier: partyData.paillier,
         pedersen: partyData.pedersen,
       }];
@@ -108,7 +115,7 @@ export const newSignSession = (
 
   const inputForRound1: SignPartyInputRound1 = {
     message: signRequest.message,
-    secretEcdsa: keyConfig.ecdsa,
+    secretEcdsa: Fp.mul(lag[keyConfig.partyId], keyConfig.ecdsa),
     secretPaillier: keyConfig.paillier,
     publicKey,
     partiesPublic,

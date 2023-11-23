@@ -1,6 +1,7 @@
+import { serialize } from 'v8';
 import { AffinePoint, AffinePointSerialized } from './common.types.js';
-import { PaillierPublicKey, PaillierPublicKeySerialized, PaillierSecretKey, PaillierSecretKeySerialized } from './paillier.js';
-import { PedersenParameters, PedersenParametersSerialized } from './pedersen.js';
+import { PaillierPublicKey, PaillierPublicKeySerialized, PaillierSecretKey, PaillierSecretKeySerialized, paillierPublicKeyFromSerialized, paillierSecretKeyFromSerialized } from './paillier.js';
+import { PedersenParameters, PedersenParametersSerialized, pedersenParametersFromSerialized } from './pedersen.js';
 
 export type PartyId = string;
 
@@ -19,6 +20,24 @@ export type PartyPublicKeyConfigSerialized = {
   paillier: PaillierPublicKeySerialized,
   pedersen: PedersenParametersSerialized,
 };
+
+const deserializePartyPublicKeyConfig = (
+  serialized: PartyPublicKeyConfigSerialized
+): PartyPublicKeyConfig => {
+  return {
+    partyId: serialized.partyId,
+    ecdsa: {
+      x: BigInt('0x' + serialized.ecdsa.xHex),
+      y: BigInt('0x' + serialized.ecdsa.yHex),
+    },
+    elgamal: {
+      x: BigInt('0x' + serialized.elgamal.xHex),
+      y: BigInt('0x' + serialized.elgamal.yHex),
+    },
+    paillier: paillierPublicKeyFromSerialized(serialized.paillier),
+    pedersen: pedersenParametersFromSerialized(serialized.pedersen),
+  };
+}
 
 export type PartySecretKeyConfig = {
   curve: 'secp256k1',
@@ -43,3 +62,26 @@ export type PartySecretKeyConfigSerialized = {
   chainKeyHex: string, // TODO
   publicPartyData: Record<string, PartyPublicKeyConfigSerialized>,
 };
+
+export const deserializePartySecretKeyConfig = (
+  serialized: PartySecretKeyConfigSerialized
+): PartySecretKeyConfig => {
+  const publicPartyData = Object.fromEntries(
+    Object.entries(serialized.publicPartyData)
+      .map(([partyId, partyPublicKeyConfigSerialized]) => (
+        [partyId, deserializePartyPublicKeyConfig(partyPublicKeyConfigSerialized)]
+      ))
+  );
+
+  return {
+    curve: serialized.curve,
+    partyId: serialized.partyId,
+    threshold: serialized.threshold,
+    ecdsa: BigInt('0x' + serialized.ecdsaHex),
+    elgamal: BigInt('0x' + serialized.elgamalHex),
+    paillier: paillierSecretKeyFromSerialized(serialized.paillier),
+    rid: BigInt('0x' + serialized.ridHex),
+    chainKey: BigInt('0x' + serialized.chainKeyHex),
+    publicPartyData,
+  };
+}
