@@ -1,9 +1,7 @@
-import { secp256k1 } from "@noble/curves/secp256k1";
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils';
 
+import Fn from './Fn.js';
 import { PartyId } from "./keyConfig.js";
-
-const Fp = secp256k1.CURVE.Fp;
 
 export const lagrange = (
   interpolationDomain: PartyId[],
@@ -35,8 +33,9 @@ const getScalarsAndNumerator = (
     const idBytes = utf8ToBytes(id);
     const xi = BigInt('0x' + bytesToHex(idBytes));
     scalars[id] = xi;
-    numerator = Fp.mul(numerator, xi);
+    numerator = Fn.mul(numerator, xi);
   }
+
   return { scalars, numerator };
 }
 
@@ -50,13 +49,13 @@ const lagrangeInternal = (
   let denominator = 1n;
   Object.entries(interpolationDomain).forEach(([i, xI]) => {
     if (i === j) {
-      denominator = Fp.mul(denominator, xJ);
+      denominator = Fn.mul(denominator, xJ);
     } else {
-      denominator = Fp.mul(denominator, Fp.add(Fp.neg(xJ), xI));
+      denominator = Fn.mul(denominator, Fn.sub(xI, xJ));
     }
   });
 
-  const lJ = Fp.mul(Fp.inv(denominator), numerator);
+  const lJ = Fn.div(numerator, denominator)
 
   return lJ;
 };
