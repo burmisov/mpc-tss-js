@@ -17,16 +17,17 @@ Current status: some playing around with architecture and sources of inspiration
 - [ ] MILESTONE 1: Create a valid signature via "offline" ceremony given pre-created party setups
 - [x] Paillier encryption scheme internal library (minimal)
 - [x] Keyconfig (party setup) data
+- [x] Pedersen
+- [x] Lagrange
+- [ ] ZK Proofs
+- [ ] Implement Round 1 signing
 - [ ] Blake3-based hasher class?
 - [ ] Devise a predictable Error model
 - [ ] ECDSA with secp256k1 utils (use/wrap @noble/curves ?)
-- [ ] Pedersen
 - [ ] ElGamal
-- [ ] Lagrange
 - [ ] BIP32
 - [ ] Oblivious Transfer
 - [ ] MTA
-- [ ] ZK Proofs
 - [ ] Signing round data and implementations
 - [ ] MILESTONE 2: Implement a key generation ceremony; generate valid party setups and create a valid signature
 - [ ] MILESTONE 3+: Review, add Schnorr and Ed25519 signatures to the scope, implement key refresh ceremony, etc.
