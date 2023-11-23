@@ -1,5 +1,10 @@
 import { gcd, modPow, modMultiply } from "bigint-crypto-utils";
 
+// TODO: add tests but first add testable functions
+// currently it seems untestable because it is unclear where
+// the arguments for Verify should come from
+// I suppose it is going to become more clear once we have ZK proofs in place
+
 export type PedersenParameters = {
   n: bigint;
   s: bigint;
