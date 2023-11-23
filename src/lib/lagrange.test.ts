@@ -1,15 +1,13 @@
 import { describe, it } from "node:test";
 import assert from 'node:assert/strict';
 
-import { secp256k1 } from "@noble/curves/secp256k1";
+import Fn from "./Fn.js";
 
 import { lagrange } from "./lagrange.js";
 
-const Fp = secp256k1.CURVE.Fp;
-
 describe("Lagrange", async () => {
   const fpSum = (args: bigint[]): bigint => {
-    return args.reduce((acc, x) => Fp.add(acc, x), Fp.ZERO);
+    return args.reduce((acc, x) => Fn.add(acc, x), 0n);
   }
 
   it("correctly computes", async () => {
@@ -22,7 +20,7 @@ describe("Lagrange", async () => {
     const sumEven = fpSum(Object.values(coefsEven));
     const sumOdd = fpSum(Object.values(coefsOdd));
 
-    assert.equal(sumEven, Fp.ONE, 'Sum of coefficients is not 1');
-    assert.equal(sumOdd, Fp.ONE, 'Sum of coefficients is not 1');
+    assert.equal(sumEven, 1n, 'Sum of coefficients is not 1');
+    assert.equal(sumOdd, 1n, 'Sum of coefficients is not 1');
   });
 });
