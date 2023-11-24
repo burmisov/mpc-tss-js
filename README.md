@@ -22,6 +22,8 @@ Current status: some playing around with architecture and sources of inspiration
 - [x] ZK Proofs -- zk/enc
 - [x] Signing Round 1 !
 - [ ] Refactor and cleanup when round 1 done
+- [ ] ZK Proofs -- zk/logstar
+- [ ] MTA
 - [ ] Signing Round 2
 - [ ] ZK Proofs -- others
 - [ ] Blake3-based hasher class?
@@ -30,7 +32,6 @@ Current status: some playing around with architecture and sources of inspiration
 - [ ] ElGamal
 - [ ] BIP32
 - [ ] Oblivious Transfer
-- [ ] MTA
 - [ ] Signing round data and implementations
 - [ ] MILESTONE 2: Implement a key generation ceremony; generate valid party setups and create a valid signature
 - [ ] MILESTONE 3+: Review, add Schnorr and Ed25519 signatures to the scope, implement key refresh ceremony, etc.
