@@ -13,8 +13,11 @@
 
 import {
   modInv, bitLength, gcd, abs, modPow, modMultiply,
-  isProbablyPrime, randBytesSync,
+  isProbablyPrime, randBytesSync, phi, randBetween,
 } from 'bigint-crypto-utils';
+
+import { sampleUnitModN } from './sample.js';
+import { PedersenParameters } from './pedersen.js';
 
 export type PaillierSecretKey = {
   p: bigint;
@@ -68,17 +71,7 @@ export const paillierSecretKeyFromPrimes = (p: bigint, q: bigint): PaillierSecre
 }
 
 export const generateRandomNonce = (modulus: bigint): bigint => {
-  const maxIterations = 256;
-  const randByteLength = Math.floor((bitLength(modulus) + 7) / 8);
-  for (let i = 0; i < maxIterations; i++) {
-    const nonceBits = randBytesSync(randByteLength);
-    const nonce = BigInt('0x' + nonceBits.toString('hex'));
-    const isUnit = (gcd(nonce, modulus) === 1n);
-    if (isUnit) {
-      return nonce;
-    }
-  }
-  throw new Error('MAX_INT_ITERATIONS_EXCEEDED');
+  return sampleUnitModN(modulus);
 }
 
 export const paillierEncrypt = (
@@ -172,6 +165,32 @@ export const paillierMultiply = (
     ciphertext, scalar, publicKey.nSquared
   );
   return ciphertextProduct;
+}
+
+export const paillierGeneratePedersen = (
+  secretKey: PaillierSecretKey,
+): {
+  pedersen: PedersenParameters,
+  lambda: bigint,
+} => {
+  const { s, t, lambda } = samplePedersen(secretKey.phi, secretKey.publicKey.n);
+  const pedersen: PedersenParameters = {
+    n: secretKey.publicKey.n,
+    s, t,
+  };
+  return { pedersen, lambda };
+}
+
+const samplePedersen = (phi: bigint, n: bigint): {
+  s: bigint,
+  t: bigint,
+  lambda: bigint,
+} => {
+  const lambda = randBetween(phi);
+  const tau = sampleUnitModN(n);
+  const t = modMultiply([tau, tau], n);
+  const s = modPow(t, lambda, n);
+  return { s, t, lambda };
 }
 
 const SEC_PARAM = 256;

@@ -1,11 +1,11 @@
 import { blake3 } from '@noble/hashes/blake3';
 import { hexToBytes } from '@noble/hashes/utils';
 
-import { AffinePoint, AffinePointSerialized } from "../common.types.js"
+import { AffinePoint } from "../common.types.js"
 import { PartyId, PartySecretKeyConfig } from "../keyConfig.js";
 import { PaillierPublicKey, PaillierSecretKey } from "../paillier.js"
 import { PedersenParameters } from "../pedersen.js"
-import { ZkEncProof } from '../zk.js';
+import { ZkEncProof } from '../zk/enc.js';
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { lagrange } from '../lagrange.js';
 

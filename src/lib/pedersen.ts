@@ -84,6 +84,5 @@ export const pedersenVerify = (
 
   const te = modPow(T, e, parameters.n);
   const rhs = modMultiply([te, S], parameters.n);
-
   return lhs === rhs;
 }

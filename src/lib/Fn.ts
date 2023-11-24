@@ -4,6 +4,11 @@ import { secp256k1 } from "@noble/curves/secp256k1";
 export default class Fn {
   static N = secp256k1.CURVE.n;
 
+  static mod(x: bigint): bigint {
+    // TODO
+    return modAdd([x, 0], Fn.N);
+  }
+
   static mul(lhs: bigint, rhs: bigint): bigint {
     return modMultiply([lhs, rhs], Fn.N);
   }

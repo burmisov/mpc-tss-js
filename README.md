@@ -19,7 +19,8 @@ Current status: some playing around with architecture and sources of inspiration
 - [x] Keyconfig (party setup) data
 - [x] Pedersen
 - [x] Lagrange
-- [ ] ZK Proofs
+- [x] ZK Proofs -- zk/enc
+- [ ] ZK Proofs -- others
 - [ ] Implement Round 1 signing
 - [ ] Blake3-based hasher class?
 - [ ] Devise a predictable Error model
