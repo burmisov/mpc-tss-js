@@ -3,10 +3,23 @@ import assert from 'node:assert/strict';
 import { secp256k1 } from '@noble/curves/secp256k1';
 
 import { AffinePointSerialized } from '../common.types.js';
-import { PartyPublicKeyConfigSerialized, PartySecretKeyConfigSerialized, deserializePartySecretKeyConfig } from "../keyConfig.js";
-import { PaillierPublicKeySerialized, PaillierSecretKeySerialized, paillierPublicKeyFromSerialized, paillierSecretKeyFromSerialized } from '../paillier.js';
-import { PedersenParametersSerialized, pedersenParametersFromSerialized, pedersenValidateParameters } from '../pedersen.js';
-import { SignRequestSerialized, deserializeSignRequest, newSignSession } from './sign.js';
+import {
+  PartyPublicKeyConfigSerialized, PartySecretKeyConfig,
+  PartySecretKeyConfigSerialized, deserializePartySecretKeyConfig,
+} from "../keyConfig.js";
+import {
+  PaillierPublicKeySerialized, PaillierSecretKeySerialized,
+  paillierPublicKeyFromSerialized, paillierSecretKeyFromSerialized,
+} from '../paillier.js';
+import {
+  PedersenParametersSerialized, pedersenParametersFromSerialized,
+  pedersenValidateParameters,
+} from '../pedersen.js';
+import {
+  SignPartyInputRound1, SignPartyOutputRound1, SignPartySession,
+  SignRequestSerialized, deserializeSignRequest, newSignSession,
+} from './sign.js';
+import signRound1 from './signRound1.js';
 
 const publicKeyConfigA: PartyPublicKeyConfigSerialized = {
   partyId: 'a',
@@ -210,14 +223,51 @@ describe('sign', () => {
     checkPedersenFixture(publicKeyConfigC.pedersen);
   });
 
+  let partyConfigA: PartySecretKeyConfig;
+  let sessionA: SignPartySession;
+  let inputForRound1A: SignPartyInputRound1;
+  let round1outputA: SignPartyOutputRound1;
+
+  let partyConfigB: PartySecretKeyConfig;
+  let sessionB: SignPartySession;
+  let inputForRound1B: SignPartyInputRound1;
+  let round1outputB: SignPartyOutputRound1;
+
+  let partyConfigC: PartySecretKeyConfig;
+  let sessionC: SignPartySession;
+  let inputForRound1C: SignPartyInputRound1;
+  let round1outputC: SignPartyOutputRound1;
+
   it('prepares session', () => {
-    const partyConfigA = deserializePartySecretKeyConfig(secretKeyConfigA);
-    const { session, inputForRound1 } = newSignSession(signRequest, partyConfigA);
+    partyConfigA = deserializePartySecretKeyConfig(secretKeyConfigA);
+    const resultA = newSignSession(signRequest, partyConfigA);
+    sessionA = resultA.session;
+    inputForRound1A = resultA.inputForRound1;
 
-    // TODO
-    // console.log('session', session);
-    // console.log('inputForRound1', inputForRound1);
+    partyConfigB = deserializePartySecretKeyConfig(secretKeyConfigB);
+    const resultB = newSignSession(signRequest, partyConfigA);
+    sessionB = resultB.session;
+    inputForRound1B = resultB.inputForRound1;
 
-    // console.log(`>>> ${inputForRound1.publicKey.x.toString(16)}${inputForRound1.publicKey.y.toString(16)}`);
+    partyConfigC = deserializePartySecretKeyConfig(secretKeyConfigC);
+    const resultC = newSignSession(signRequest, partyConfigA);
+    sessionC = resultC.session;
+    inputForRound1C = resultC.inputForRound1;
   });
+
+  it('does round 1', () => {
+    const resultA = signRound1(inputForRound1A, sessionA);
+    sessionA = resultA.session;
+    round1outputA = resultA.roundOutput;
+
+    const resultB = signRound1(inputForRound1B, sessionB);
+    sessionB = resultB.session;
+    round1outputB = resultB.roundOutput;
+
+    const resultC = signRound1(inputForRound1C, sessionC);
+    sessionC = resultC.session;
+    round1outputC = resultC.roundOutput;
+  });
+
+  // TODO round 2 +
 });

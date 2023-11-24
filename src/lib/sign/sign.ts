@@ -57,11 +57,14 @@ export type SignPartyOutputRound1 = {
 };
 
 export type SignBroadcastForRound2 = {
+  source: PartyId,
   K: bigint, // Paillier ciphertext
   G: bigint, // Paillier ciphertext
 };
 
 export type SignMessageForRound2 = {
+  source: PartyId,
+  destination: PartyId,
   proofEnc: ZkEncProof,
 };
 

@@ -20,8 +20,10 @@ Current status: some playing around with architecture and sources of inspiration
 - [x] Pedersen
 - [x] Lagrange
 - [x] ZK Proofs -- zk/enc
+- [x] Signing Round 1 !
+- [ ] Refactor and cleanup when round 1 done
+- [ ] Signing Round 2
 - [ ] ZK Proofs -- others
-- [ ] Implement Round 1 signing
 - [ ] Blake3-based hasher class?
 - [ ] Devise a predictable Error model
 - [ ] ECDSA with secp256k1 utils (use/wrap @noble/curves ?)
