@@ -21,12 +21,12 @@ Current status: some playing around with architecture and sources of inspiration
 - [x] Lagrange
 - [x] ZK Proofs -- zk/enc
 - [x] Signing Round 1 !
-- [ ] Refactor and cleanup when round 1 done
-- [ ] ZK Proofs -- zk/logstar
+- [x] ZK Proofs -- zk/logstar
 - [ ] ZK Proofs -- zk/affg
 - [ ] ZK Proofs -- zk/affp
 - [ ] MTA
 - [ ] Signing Round 2
+- [ ] Refactor and cleanup
 - [ ] ZK Proofs -- others
 - [ ] Blake3-based hasher class?
 - [ ] Devise a predictable Error model
