@@ -1,4 +1,3 @@
-import { blake3 } from "@noble/hashes/blake3";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 
 import Fn from "../Fn.js";
@@ -8,14 +7,12 @@ import {
   paillierMultiply, validateCiphertext
 } from "../paillier.js";
 import { PedersenParameters, pedersenCommit, pedersenVerify } from "../pedersen.js";
-import { bitLength, modMultiply, modPow, randBitsSync } from "bigint-crypto-utils";
-import { sampleUnitModN } from "../sample.js";
-
-const SEC_PARAM = 256;
-const L = 1 * SEC_PARAM; // = 256
-const EPSILON = 2 * SEC_PARAM; // = 512
-const L_PLUS_EPSILON = L + EPSILON; // = 768
-const BITS_INT_MOD_N = 8 * SEC_PARAM; // = 2048
+import { bitLength, modMultiply, modPow } from "bigint-crypto-utils";
+import {
+  sampleUnitModN, sampleIntervalLeps, sampleIntervalLN,
+  sampleIntervalLepsN, L_PLUS_EPSILON,
+} from "../sample.js";
+import { Hasher } from "../Hasher.js";
 
 export type ZkEncPublicKey = {
   K: bigint, // Paillier ciphertext
@@ -124,31 +121,6 @@ export const zkEncVerifyProof = (
   return lhs === rhs;
 }
 
-const sampleNeg = (bits: number): bigint => {
-  const randomBits = randBitsSync(bits + 1);
-  const bigRandomBits = BigInt('0x' + randomBits.toString('hex'));
-  const sign = bigRandomBits & 1n;
-  const rest = bigRandomBits >> 1n;
-  const result = Fn.mod(sign ? -rest : rest);
-  return result;
-}
-
-const sampleIntervalLeps = (): bigint => {
-  return sampleNeg(L_PLUS_EPSILON);
-}
-
-const sampleIntervalLN = (): bigint => {
-  return sampleNeg(L + BITS_INT_MOD_N);
-}
-
-const sampleIntervalLepsN = (): bigint => {
-  return sampleNeg(L_PLUS_EPSILON + BITS_INT_MOD_N);
-}
-
-export const sampleIntervalL = (): bigint => {
-  return sampleNeg(L);
-}
-
 export const zkEncIsPublicKeyValid = (
   proof: ZkEncProof,
   publicKey: ZkEncPublicKey,
@@ -171,41 +143,14 @@ const challenge = (
   publicKey: ZkEncPublicKey,
   commitment: ZkEncCommitment,
 ): bigint => {
-  const hashBytes = blake3
-    .create({})
-    .update(
-      bigintToBytes(publicKey.aux.n),
-    )
-    .update(
-      bigintToBytes(publicKey.aux.s),
-    )
-    .update(
-      bigintToBytes(publicKey.aux.t),
-    )
-    .update(
-      bigintToBytes(publicKey.prover.n),
-    )
-    .update(
-      bigintToBytes(publicKey.prover.nSquared),
-    )
-    .update(
-      bigintToBytes(publicKey.prover.nPlusOne),
-    )
-    .update(
-      bigintToBytes(publicKey.K),
-    )
-    .update(
-      bigintToBytes(commitment.S),
-    )
-    .update(
-      bigintToBytes(commitment.A),
-    )
-    .update(
-      bigintToBytes(commitment.C),
-    )
-    .digest();
-
-  const bigHash = BigInt("0x" + bytesToHex(hashBytes));
+  const bigHash = new Hasher().updateMulti([
+    publicKey.aux,
+    publicKey.prover,
+    publicKey.K,
+    commitment.S,
+    commitment.A,
+    commitment.C,
+  ]).digestBigint();
 
   const challenge = Fn.sub(bigHash, 2n ** 255n); // TODO
 

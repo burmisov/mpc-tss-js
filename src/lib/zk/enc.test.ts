@@ -2,9 +2,10 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  ZkEncPrivateKey, ZkEncPublicKey, sampleIntervalL,
+  ZkEncPrivateKey, ZkEncPublicKey, 
   zkEncCreateProof, zkEncVerifyProof,
 } from "./enc.js";
+import { sampleIntervalL } from "../sample.js";
 import {
   paillierEncrypt, paillierGeneratePedersen,
   paillierSecretKeyFromPrimes, validatePaillierPrime,
