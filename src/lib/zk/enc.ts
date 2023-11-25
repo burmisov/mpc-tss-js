@@ -1,16 +1,16 @@
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 
 import Fn from "../Fn.js";
-import { isValidModN } from "../arith.js";
+import { isValidModN, isInIntervalLeps } from "../arith.js";
 import {
   PaillierPublicKey, paillierAdd, paillierEncryptWithNonce,
   paillierMultiply, validateCiphertext
 } from "../paillier.js";
 import { PedersenParameters, pedersenCommit, pedersenVerify } from "../pedersen.js";
-import { bitLength, modMultiply, modPow } from "bigint-crypto-utils";
+import { modMultiply, modPow } from "bigint-crypto-utils";
 import {
   sampleUnitModN, sampleIntervalLeps, sampleIntervalLN,
-  sampleIntervalLepsN, L_PLUS_EPSILON,
+  sampleIntervalLepsN
 } from "../sample.js";
 import { Hasher } from "../Hasher.js";
 
@@ -102,7 +102,7 @@ export const zkEncVerifyProof = (
   publicKey: ZkEncPublicKey,
 ): boolean => {
   if (!zkEncIsPublicKeyValid(proof, publicKey)) { return false; }
-  if (bitLength(proof.Z1) > L_PLUS_EPSILON) { return false; }
+  if (!isInIntervalLeps(proof.Z1)) { return false; }
 
   const e = challenge(publicKey, proof.commitment);
   if (!pedersenVerify(
@@ -143,7 +143,7 @@ const challenge = (
   publicKey: ZkEncPublicKey,
   commitment: ZkEncCommitment,
 ): bigint => {
-  const bigHash = new Hasher().updateMulti([
+  const bigHash = Hasher.create().updateMulti([
     publicKey.aux,
     publicKey.prover,
     publicKey.K,

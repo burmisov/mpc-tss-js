@@ -17,6 +17,10 @@ export class Hasher {
     this.hash = blake3.create({}); // TODO: pass params?
   }
 
+  public static create(): Hasher {
+    return new Hasher();
+  }
+
   private checkUsed() {
     if (this.used) {
       throw new Error('Hasher already used');
