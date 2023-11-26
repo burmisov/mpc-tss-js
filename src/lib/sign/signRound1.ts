@@ -8,7 +8,7 @@ import {
 import Fn from "../Fn.js";
 import { AffinePoint } from "../common.types.js";
 import { paillierEncrypt } from "../paillier.js";
-import { ZkEncPrivateKey, ZkEncPublicKey, zkEncCreateProof } from "../zk/enc.js";
+import { ZkEncPrivate, ZkEncPublic, zkEncCreateProof } from "../zk/enc.js";
 
 export default (
   roundInput: SignPartyInputRound1,
@@ -42,12 +42,12 @@ export default (
       return;
     }
 
-    const zkPublic: ZkEncPublicKey = {
+    const zkPublic: ZkEncPublic = {
       K,
       prover: roundInput.partiesPublic[session.selfId].paillier,
       aux: partyPublic.pedersen,
     };
-    const zkPrivate: ZkEncPrivateKey = {
+    const zkPrivate: ZkEncPrivate = {
       k: KShare,
       rho: KNonce,
     };

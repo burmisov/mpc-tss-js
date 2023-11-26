@@ -2,7 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  ZkEncPrivateKey, ZkEncPublicKey, 
+  ZkEncPrivate, ZkEncPublic,
   zkEncCreateProof, zkEncVerifyProof,
 } from "./enc.js";
 import { sampleIntervalL } from "../sample.js";
@@ -27,16 +27,16 @@ describe("zk/enc", () => {
 
     const { ciphertext: K, nonce: rho } = paillierEncrypt(paillierPublicKey, k);
 
-    const zkEncPublicKey: ZkEncPublicKey = {
+    const zkEncPublic: ZkEncPublic = {
       K, prover: paillierPublicKey, aux: pedersen,
     };
-    const zkEncPrivateKey: ZkEncPrivateKey = {
+    const zkEncPrivate: ZkEncPrivate = {
       k, rho,
     };
 
-    const proof = zkEncCreateProof(zkEncPublicKey, zkEncPrivateKey);
+    const proof = zkEncCreateProof(zkEncPublic, zkEncPrivate);
 
-    const verified = zkEncVerifyProof(proof, zkEncPublicKey);
+    const verified = zkEncVerifyProof(proof, zkEncPublic);
 
     assert.equal(verified, true, 'Proof verification failed');
   });
