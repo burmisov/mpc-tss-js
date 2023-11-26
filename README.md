@@ -23,8 +23,8 @@ Current status: some playing around with architecture and sources of inspiration
 - [x] Signing Round 1 !
 - [x] ZK Proofs -- zk/logstar
 - [x] ZK Proofs -- zk/affg
-- [ ] ZK Proofs -- zk/affp
-- [ ] MTA
+- [x] ZK Proofs -- zk/affp
+- [x] MTA
 - [ ] Signing Round 2
 - [ ] Refactor and cleanup
 - [ ] ZK Proofs -- others
