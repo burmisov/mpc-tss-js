@@ -1,5 +1,5 @@
 import { bitLength, gcd } from "bigint-crypto-utils";
-import { L_PLUS_EPSILON } from "./sample.js";
+import { LPRIME_PLUS_EPSILON, L_PLUS_EPSILON } from "./sample.js";
 
 export const isValidModN = (n: bigint, x: bigint): boolean => {
   if (typeof x !== "bigint") { return false; }
@@ -10,4 +10,8 @@ export const isValidModN = (n: bigint, x: bigint): boolean => {
 
 export const isInIntervalLeps = (x: bigint): boolean => {
   return bitLength(x) <= L_PLUS_EPSILON;
+}
+
+export const isInIntervalLprimeEps = (x: bigint): boolean => {
+  return bitLength(x) <= LPRIME_PLUS_EPSILON;
 }

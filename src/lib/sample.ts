@@ -1,12 +1,13 @@
-import { bitLength, gcd, randBytesSync } from 'bigint-crypto-utils';
-import { randBitsSync } from "bigint-crypto-utils";
+import { bitLength, gcd, randBytesSync, randBitsSync } from 'bigint-crypto-utils';
 
 import Fn from './Fn.js';
 
 const SEC_PARAM = 256;
 const L = 1 * SEC_PARAM; // = 256
+const LPRIME = 5 * SEC_PARAM; // = 1280
 const EPSILON = 2 * SEC_PARAM; // = 512
 export const L_PLUS_EPSILON = L + EPSILON; // = 768
+export const LPRIME_PLUS_EPSILON = LPRIME + EPSILON; // = 1792
 const BITS_INT_MOD_N = 8 * SEC_PARAM; // = 2048
 
 export const sampleUnitModN = (modulus: bigint): bigint => {
@@ -35,9 +36,17 @@ export const sampleIntervalLepsN = (): bigint => {
   return sampleNeg(L_PLUS_EPSILON + BITS_INT_MOD_N);
 };
 
+export const sampleIntervalLprimeEps = (): bigint => {
+  return sampleNeg(LPRIME_PLUS_EPSILON);
+}
+
 export const sampleIntervalL = (): bigint => {
   return sampleNeg(L);
 };
+
+export const sampleIntervalLprime = (): bigint => {
+  return sampleNeg(LPRIME);
+}
 
 export const sampleNeg = (bits: number): bigint => {
   const randomBits = randBitsSync(bits + 1);
