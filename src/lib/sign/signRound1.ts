@@ -3,8 +3,8 @@ import { randBetween } from "bigint-crypto-utils";
 
 import {
   SignPartySession, SignPartyInputRound1, SignPartyOutputRound1,
-  SignBroadcastForRound2, SignMessageForRound2,
 } from "./sign.js";
+import { SignBroadcastForRound2, SignMessageForRound2 } from './SignerRound2.js';
 import Fn from "../Fn.js";
 import { AffinePoint } from "../common.types.js";
 import { paillierEncrypt } from "../paillier.js";
@@ -30,7 +30,7 @@ export default (
   );
 
   const broadcast: SignBroadcastForRound2 = {
-    source: session.selfId,
+    from: session.selfId,
     K, G,
   };
 
@@ -53,8 +53,8 @@ export default (
     };
     const proof = zkEncCreateProof(zkPublic, zkPrivate);
     const message: SignMessageForRound2 = {
-      source: session.selfId,
-      destination: partyId,
+      from: session.selfId,
+      to: partyId,
       proofEnc: proof,
     };
     messages.push(message);

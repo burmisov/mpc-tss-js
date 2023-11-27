@@ -1,4 +1,3 @@
-import { serialize } from 'v8';
 import { AffinePoint, AffinePointSerialized } from './common.types.js';
 import { PaillierPublicKey, PaillierPublicKeySerialized, PaillierSecretKey, PaillierSecretKeySerialized, paillierPublicKeyFromSerialized, paillierSecretKeyFromSerialized } from './paillier.js';
 import { PedersenParameters, PedersenParametersSerialized, pedersenParametersFromSerialized } from './pedersen.js';
@@ -84,4 +83,10 @@ export const deserializePartySecretKeyConfig = (
     chainKey: BigInt('0x' + serialized.chainKeyHex),
     publicPartyData,
   };
+}
+
+export const otherPartyIds = (
+  partyIds: Array<PartyId>, selfId: PartyId,
+): Array<PartyId> => {
+  return partyIds.filter(partyId => partyId !== selfId);
 }

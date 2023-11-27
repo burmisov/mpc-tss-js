@@ -5,9 +5,10 @@ import { AffinePoint } from "../common.types.js"
 import { PartyId, PartySecretKeyConfig } from "../keyConfig.js";
 import { PaillierPublicKey, PaillierSecretKey } from "../paillier.js"
 import { PedersenParameters } from "../pedersen.js"
-import { ZkEncProof } from '../zk/enc.js';
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { lagrange } from '../lagrange.js';
+import { SignPartyInputRound2 } from './SignerRound2.js';
+import { SignBroadcastForRound2, SignMessageForRound2 } from './SignerRound2.js';
 
 const Fp = secp256k1.CURVE.Fp;
 
@@ -54,29 +55,6 @@ export type SignPartyOutputRound1 = {
   broadcasts: [SignBroadcastForRound2],
   messages: Array<SignMessageForRound2>,
   inputForRound2: SignPartyInputRound2,
-};
-
-export type SignBroadcastForRound2 = {
-  source: PartyId,
-  K: bigint, // Paillier ciphertext
-  G: bigint, // Paillier ciphertext
-};
-
-export type SignMessageForRound2 = {
-  source: PartyId,
-  destination: PartyId,
-  proofEnc: ZkEncProof,
-};
-
-export type SignPartyInputRound2 = {
-  inputForRound1: SignPartyInputRound1,
-  K: bigint, // Paillier ciphertext
-  G: bigint, // Paillier ciphertext
-  BigGammaShare: AffinePoint,
-  GammaShare: bigint,
-  KShare: bigint,
-  KNonce: bigint,
-  GNonce: bigint,
 };
 
 export type SignPartySession = {

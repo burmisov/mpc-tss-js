@@ -15,7 +15,7 @@ import { modMultiply, modPow } from "bigint-crypto-utils";
 export type ZkLogstarPublic = {
   C: bigint; // ciphertext
   X: AffinePoint;
-  G: AffinePoint;
+  G?: AffinePoint;
   prover: PaillierPublicKey;
   aux: PedersenParameters;
 };
@@ -135,7 +135,7 @@ const challenge = (
     pub.prover,
     pub.C,
     pub.X,
-    pub.G,
+    pub.G ?? 0n,
     commitment.S,
     commitment.A,
     commitment.Y,

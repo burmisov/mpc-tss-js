@@ -26,6 +26,7 @@ Current status: some playing around with architecture and sources of inspiration
 - [x] ZK Proofs -- zk/affp
 - [x] MTA
 - [ ] Signing Round 2
+- [ ] Fix session hashing
 - [ ] Refactor and cleanup
 - [ ] ZK Proofs -- others
 - [ ] Blake3-based hasher class?
