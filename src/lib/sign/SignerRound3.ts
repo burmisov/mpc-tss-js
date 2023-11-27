@@ -132,10 +132,10 @@ export class SignerRound3 {
   }
 
   public process(): SignPartyOutputRound3 {
-    const Gamma = secp256k1.ProjectivePoint.ZERO;
+    let Gamma = secp256k1.ProjectivePoint.ZERO;
     Object.values(this.BigGammaShare).forEach(afPoint => {
       const point = secp256k1.ProjectivePoint.fromAffine(afPoint);
-      Gamma.add(point);
+      Gamma = Gamma.add(point);
     });
 
     const BigDeltaShare = Gamma.multiply(
@@ -196,7 +196,7 @@ export class SignerRound3 {
       inputForRound4: {
         DeltaShare,
         BigDeltaShare,
-        Gamma,
+        Gamma: Gamma.toAffine(),
         ChiShare: Fn.mod(ChiShare),
         inputForRound3: this.roundInput,
       },

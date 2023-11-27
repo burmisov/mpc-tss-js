@@ -22,6 +22,7 @@ import {
 import signRound1 from './signRound1.js';
 import { SignPartyInputRound2, SignPartyOutputRound2, SignerRound2 } from './SignerRound2.js';
 import { SignPartyOutputRound3, SignerRound3 } from './SignerRound3.js';
+import { SignPartyOutputRound4, SignerRound4 } from './SignerRound4.js';
 
 const publicKeyConfigA: PartyPublicKeyConfigSerialized = {
   partyId: 'a',
@@ -231,6 +232,7 @@ describe('sign', () => {
   let round1outputA: SignPartyOutputRound1;
   let round2outputA: SignPartyOutputRound2;
   let round3outputA: SignPartyOutputRound3;
+  let round4outputA: SignPartyOutputRound4;
 
   let partyConfigB: PartySecretKeyConfig;
   let sessionB: SignPartySession;
@@ -238,6 +240,7 @@ describe('sign', () => {
   let round1outputB: SignPartyOutputRound1;
   let round2outputB: SignPartyOutputRound2;
   let round3outputB: SignPartyOutputRound3;
+  let round4outputB: SignPartyOutputRound4;
 
   let partyConfigC: PartySecretKeyConfig;
   let sessionC: SignPartySession;
@@ -245,6 +248,7 @@ describe('sign', () => {
   let round1outputC: SignPartyOutputRound1;
   let round2outputC: SignPartyOutputRound2;
   let round3outputC: SignPartyOutputRound3;
+  let round4outputC: SignPartyOutputRound4;
 
   it('prepares session', () => {
     partyConfigA = deserializePartySecretKeyConfig(secretKeyConfigA);
@@ -353,5 +357,41 @@ describe('sign', () => {
     sessionC = signerRound3C.session;
   });
 
-  // TODO round 4 +
+  it('does round 4', () => {
+    const allBroadcasts = [
+      ...round3outputA.broadcasts,
+      ...round3outputB.broadcasts,
+      ...round3outputC.broadcasts,
+    ];
+    const directMessagesToA = [
+      ...round3outputB.messages.filter((m) => m.to === 'a'),
+      ...round3outputC.messages.filter((m) => m.to === 'a'),
+    ];
+    const directMessagesToB = [
+      ...round3outputA.messages.filter((m) => m.to === 'b'),
+      ...round3outputC.messages.filter((m) => m.to === 'b'),
+    ];
+    const directMessagesToC = [
+      ...round3outputA.messages.filter((m) => m.to === 'c'),
+      ...round3outputB.messages.filter((m) => m.to === 'c'),
+    ];
+
+    const signerRound4A = new SignerRound4(sessionA, round3outputA.inputForRound4);
+    allBroadcasts.forEach((b) => signerRound4A.handleBroadcastMessage(b));
+    directMessagesToA.forEach((m) => signerRound4A.handleDirectMessage(m));
+    round4outputA = signerRound4A.process();
+    sessionA = signerRound4A.session;
+
+    const signerRound4B = new SignerRound4(sessionB, round3outputB.inputForRound4);
+    allBroadcasts.forEach((b) => signerRound4B.handleBroadcastMessage(b));
+    directMessagesToB.forEach((m) => signerRound4B.handleDirectMessage(m));
+    round4outputB = signerRound4B.process();
+    sessionB = signerRound4B.session;
+
+    const signerRound4C = new SignerRound4(sessionC, round3outputC.inputForRound4);
+    allBroadcasts.forEach((b) => signerRound4C.handleBroadcastMessage(b));
+    directMessagesToC.forEach((m) => signerRound4C.handleDirectMessage(m));
+    round4outputC = signerRound4C.process();
+    sessionC = signerRound4C.session;
+  });
 });
