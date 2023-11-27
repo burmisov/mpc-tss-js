@@ -23,6 +23,7 @@ import signRound1 from './signRound1.js';
 import { SignPartyInputRound2, SignPartyOutputRound2, SignerRound2 } from './SignerRound2.js';
 import { SignPartyOutputRound3, SignerRound3 } from './SignerRound3.js';
 import { SignPartyOutputRound4, SignerRound4 } from './SignerRound4.js';
+import { SignPartyOutputRound5, SignerRound5 } from './SignerRound5.js';
 
 const publicKeyConfigA: PartyPublicKeyConfigSerialized = {
   partyId: 'a',
@@ -233,6 +234,7 @@ describe('sign', () => {
   let round2outputA: SignPartyOutputRound2;
   let round3outputA: SignPartyOutputRound3;
   let round4outputA: SignPartyOutputRound4;
+  let round5outputA: SignPartyOutputRound5;
 
   let partyConfigB: PartySecretKeyConfig;
   let sessionB: SignPartySession;
@@ -241,6 +243,7 @@ describe('sign', () => {
   let round2outputB: SignPartyOutputRound2;
   let round3outputB: SignPartyOutputRound3;
   let round4outputB: SignPartyOutputRound4;
+  let round5outputB: SignPartyOutputRound5;
 
   let partyConfigC: PartySecretKeyConfig;
   let sessionC: SignPartySession;
@@ -249,6 +252,7 @@ describe('sign', () => {
   let round2outputC: SignPartyOutputRound2;
   let round3outputC: SignPartyOutputRound3;
   let round4outputC: SignPartyOutputRound4;
+  let round5outputC: SignPartyOutputRound5;
 
   it('prepares session', () => {
     partyConfigA = deserializePartySecretKeyConfig(secretKeyConfigA);
@@ -394,4 +398,35 @@ describe('sign', () => {
     round4outputC = signerRound4C.process();
     sessionC = signerRound4C.session;
   });
+
+  it('does round 5', () => {
+    const allBroadcasts = [
+      ...round4outputA.broadcasts,
+      ...round4outputB.broadcasts,
+      ...round4outputC.broadcasts,
+    ];
+
+    const signerRound5A = new SignerRound5(sessionA, round4outputA.inputForRound5);
+    allBroadcasts.forEach((b) => signerRound5A.handleBroadcastMessage(b));
+    round5outputA = signerRound5A.process();
+
+    const signerRound5B = new SignerRound5(sessionB, round4outputB.inputForRound5);
+    allBroadcasts.forEach((b) => signerRound5B.handleBroadcastMessage(b));
+    round5outputB = signerRound5B.process();
+
+    const signerRound5C = new SignerRound5(sessionC, round4outputC.inputForRound5);
+    allBroadcasts.forEach((b) => signerRound5C.handleBroadcastMessage(b));
+    round5outputC = signerRound5C.process();
+
+    assert.deepEqual(round5outputA, round5outputB);
+    assert.deepEqual(round5outputB, round5outputC);
+  });
+
+  // TODO: convert to ethereum signature and verify using external library
+
+  // it('signatures match', () => {
+  //   // console.log(round5outputA);
+  //   // console.log(round5outputB);
+  //   // console.log(round5outputC);
+  // });
 });

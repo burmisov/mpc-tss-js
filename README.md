@@ -28,7 +28,8 @@ Current status: some playing around with architecture and sources of inspiration
 - [x] Signing Round 2
 - [x] Signing Round 3
 - [x] Signing Round 4
-- [ ] Signing Round 5
+- [x] Signing Round 5
+- [ ] Covert to Ethereum signature and verify with external tool
 - [ ] Fix session hashing
 - [ ] Refactor and cleanup
 - [ ] ZK Proofs -- others

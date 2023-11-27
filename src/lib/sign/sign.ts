@@ -100,7 +100,7 @@ export const newSignSession = (
     message: signRequest.message,
     secretEcdsa: Fn.mul(lag[keyConfig.partyId], keyConfig.ecdsa),
     secretPaillier: keyConfig.paillier,
-    publicKey,
+    publicKey: publicKey.toAffine(),
     partiesPublic,
   };
 
