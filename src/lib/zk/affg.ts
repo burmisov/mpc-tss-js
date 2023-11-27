@@ -15,6 +15,7 @@ import {
 } from "../sample.js";
 import Fn from "../Fn.js";
 import { Hasher } from "../Hasher.js";
+import { isIdentity } from "../curve.js";
 
 
 export type ZkAffgPublic = {
@@ -65,8 +66,7 @@ export const zkAffgIsProofValid = (
   if (!isValidModN(pub.verifier.n, proof.W)) { return false; }
 
   const point = secp256k1.ProjectivePoint.fromAffine(proof.commitment.Bx);
-  // Identity point? TODO: check if this is the right way to do it
-  if ((point.px === 0n && point.py === 0n) || point.pz === 0n) { return false; }
+  if (isIdentity(point)) { return false; }
 
   return true;
 };

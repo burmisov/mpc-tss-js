@@ -21,6 +21,7 @@ import {
 } from './sign.js';
 import signRound1 from './signRound1.js';
 import { SignPartyInputRound2, SignPartyOutputRound2, SignerRound2 } from './SignerRound2.js';
+import { SignPartyOutputRound3, SignerRound3 } from './SignerRound3.js';
 
 const publicKeyConfigA: PartyPublicKeyConfigSerialized = {
   partyId: 'a',
@@ -229,18 +230,21 @@ describe('sign', () => {
   let inputForRound1A: SignPartyInputRound1;
   let round1outputA: SignPartyOutputRound1;
   let round2outputA: SignPartyOutputRound2;
+  let round3outputA: SignPartyOutputRound3;
 
   let partyConfigB: PartySecretKeyConfig;
   let sessionB: SignPartySession;
   let inputForRound1B: SignPartyInputRound1;
   let round1outputB: SignPartyOutputRound1;
   let round2outputB: SignPartyOutputRound2;
+  let round3outputB: SignPartyOutputRound3;
 
   let partyConfigC: PartySecretKeyConfig;
   let sessionC: SignPartySession;
   let inputForRound1C: SignPartyInputRound1;
   let round1outputC: SignPartyOutputRound1;
   let round2outputC: SignPartyOutputRound2;
+  let round3outputC: SignPartyOutputRound3;
 
   it('prepares session', () => {
     partyConfigA = deserializePartySecretKeyConfig(secretKeyConfigA);
@@ -311,5 +315,45 @@ describe('sign', () => {
     sessionC = signerRound2C.session;
   });
 
-  // TODO round 3 +
+  it('does round 3', () => {
+    const allBroadcasts = [
+      ...round2outputA.broadcasts,
+      ...round2outputB.broadcasts,
+      ...round2outputC.broadcasts,
+    ];
+    const directMessagesToA = [
+      ...round2outputB.messages.filter((m) => m.to === 'a'),
+      ...round2outputC.messages.filter((m) => m.to === 'a'),
+    ];
+    const directMessagesToB = [
+      ...round2outputA.messages.filter((m) => m.to === 'b'),
+      ...round2outputC.messages.filter((m) => m.to === 'b'),
+    ];
+    const directMessagesToC = [
+      ...round2outputA.messages.filter((m) => m.to === 'c'),
+      ...round2outputB.messages.filter((m) => m.to === 'c'),
+    ];
+
+    const signerRound3A = new SignerRound3(sessionA, round2outputA.inputForRound3);
+    allBroadcasts.forEach((b) => signerRound3A.handleBroadcastMessage(b));
+    directMessagesToA.forEach((m) => signerRound3A.handleDirectMessage(m));
+    round3outputA = signerRound3A.process();
+    sessionA = signerRound3A.session;
+
+    const signerRound3B = new SignerRound3(sessionB, round2outputB.inputForRound3);
+    allBroadcasts.forEach((b) => signerRound3B.handleBroadcastMessage(b));
+    directMessagesToB.forEach((m) => signerRound3B.handleDirectMessage(m));
+    round3outputB = signerRound3B.process();
+    sessionB = signerRound3B.session;
+
+    const signerRound3C = new SignerRound3(sessionC, round2outputC.inputForRound3);
+    allBroadcasts.forEach((b) => signerRound3C.handleBroadcastMessage(b));
+    directMessagesToC.forEach((m) => signerRound3C.handleDirectMessage(m));
+    round3outputC = signerRound3C.process();
+    sessionC = signerRound3C.session;
+
+    // TODO
+  });
+
+  // TODO round 4 +
 });

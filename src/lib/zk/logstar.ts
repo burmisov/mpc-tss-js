@@ -11,6 +11,7 @@ import {
 import Fn from "../Fn.js";
 import { Hasher } from "../Hasher.js";
 import { modMultiply, modPow } from "bigint-crypto-utils";
+import { isIdentity } from "../curve.js";
 
 export type ZkLogstarPublic = {
   C: bigint; // ciphertext
@@ -46,8 +47,7 @@ export const zkLogstarIsProofValid = (
   if (!proof) { return false; }
   if (!validateCiphertext(pub.prover, proof.commitment.A)) { return false; }
   const point = secp256k1.ProjectivePoint.fromAffine(proof.commitment.Y);
-  // Identity point? TODO: check if this is the right way to do it
-  if ((point.px === 0n && point.py === 0n) || point.pz === 0n) { return false; }
+  if (isIdentity(point)) { return false; }
   if (!isValidModN(pub.prover.n, proof.Z2)) { return false; }
   return true;
 }

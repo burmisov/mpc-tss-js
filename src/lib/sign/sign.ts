@@ -9,6 +9,7 @@ import { secp256k1 } from '@noble/curves/secp256k1';
 import { lagrange } from '../lagrange.js';
 import { SignPartyInputRound2 } from './SignerRound2.js';
 import { SignBroadcastForRound2, SignMessageForRound2 } from './SignerRound2.js';
+import Fn from '../Fn.js';
 
 const Fp = secp256k1.CURVE.Fp;
 
@@ -78,6 +79,7 @@ export const newSignSession = (
   inputForRound1: SignPartyInputRound1,
 } => {
   const lag = lagrange(signRequest.signerIds);
+  // console.log('lag full', lag);
   let publicKey = secp256k1.ProjectivePoint.ZERO;
 
   // TODO: see if can just reuse keyConfig.publicPartyData
@@ -96,7 +98,7 @@ export const newSignSession = (
 
   const inputForRound1: SignPartyInputRound1 = {
     message: signRequest.message,
-    secretEcdsa: Fp.mul(lag[keyConfig.partyId], keyConfig.ecdsa),
+    secretEcdsa: Fn.mul(lag[keyConfig.partyId], keyConfig.ecdsa),
     secretPaillier: keyConfig.paillier,
     publicKey,
     partiesPublic,

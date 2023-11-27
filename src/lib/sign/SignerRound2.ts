@@ -103,6 +103,7 @@ export class SignerRound2 {
     const otherIds = otherPartyIds(
       this.session.partyIds, this.session.selfId
     );
+    const pubData = this.roundInput.inputForRound1.partiesPublic;
     const mtaOuts = otherIds.map(partyId => {
       const {
         Beta: DeltaBeta,
@@ -114,8 +115,8 @@ export class SignerRound2 {
         this.roundInput.BigGammaShare,
         this.K[partyId],
         this.roundInput.inputForRound1.secretPaillier,
-        this.roundInput.inputForRound1.partiesPublic[partyId].paillier,
-        this.roundInput.inputForRound1.partiesPublic[partyId].pedersen,
+        pubData[partyId].paillier,
+        pubData[partyId].pedersen,
       );
 
       const {
@@ -125,18 +126,18 @@ export class SignerRound2 {
         proof: ChiProof,
       } = mtaProveAffG(
         this.roundInput.inputForRound1.secretEcdsa,
-        this.roundInput.inputForRound1.partiesPublic[this.session.selfId].ecdsa,
+        pubData[this.session.selfId].ecdsa,
         this.K[partyId],
         this.roundInput.inputForRound1.secretPaillier,
-        this.roundInput.inputForRound1.partiesPublic[partyId].paillier,
-        this.roundInput.inputForRound1.partiesPublic[partyId].pedersen,
+        pubData[partyId].paillier,
+        pubData[partyId].pedersen,
       );
 
       const pub: ZkLogstarPublic = {
         C: this.G[this.session.selfId],
         X: this.roundInput.BigGammaShare,
         prover: this.roundInput.inputForRound1.secretPaillier.publicKey,
-        aux: this.roundInput.inputForRound1.partiesPublic[partyId].pedersen,
+        aux: pubData[partyId].pedersen,
       };
       const priv: ZkLogstarPrivate = {
         X: this.roundInput.GammaShare,
@@ -166,6 +167,9 @@ export class SignerRound2 {
       inputForRound3: {
         DeltaShareBetas,
         ChiShareBetas,
+        K: this.K,
+        G: this.G,
+        inputForRound2: this.roundInput,
       },
     };
 
