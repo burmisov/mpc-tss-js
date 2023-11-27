@@ -27,7 +27,7 @@ Current status: some playing around with architecture and sources of inspiration
 - [x] MTA
 - [x] Signing Round 2
 - [x] Signing Round 3
-- [ ] Signing Round 4
+- [x] Signing Round 4
 - [ ] Signing Round 5
 - [ ] Fix session hashing
 - [ ] Refactor and cleanup
