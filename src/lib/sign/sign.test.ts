@@ -351,8 +351,6 @@ describe('sign', () => {
     directMessagesToC.forEach((m) => signerRound3C.handleDirectMessage(m));
     round3outputC = signerRound3C.process();
     sessionC = signerRound3C.session;
-
-    // TODO
   });
 
   // TODO round 4 +
