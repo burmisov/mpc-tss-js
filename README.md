@@ -8,7 +8,33 @@ The approach is described in the original paper by Canetti et al.,
 "UC Non-Interactive, Proactive, Threshold ECDSA with Identifiable Aborts"
 https://eprint.iacr.org/2021/060
 
-Current status: some playing around with architecture and sources of inspiration.
+## Current status
+
+Updated Nov 30, 2023
+
+Milestone 1 complete -- the library is able to perform a "2 out of 3" or
+"3 out of 3" parties ECDSA signature, the signature is validated both internally and
+with Ethereum tools. The 3 parties key configuration used is pre-created using the
+original [multi-party-sig](https://github.com/taurusgroup/multi-party-sig) library.
+Milestone 2 is going to be the key generation ceremony implementation, but before that
+it needs some care with state/parameters validation and cleanup.
+
+## How to use
+
+Until Milestone 2 I see no point exporting any API or interfaces so the best you
+can do now is to run the tests:
+
+**Use Node.js 21+**
+
+```
+git clone git@github.com:burmisov/mpc-tss-js.git
+cd mpc-tss-js
+npm install
+npm test
+```
+
+The signature test uses a pre-created 3-party key configuration and handles (more
+like emulates) signatories communication throught the 5 rounds of creating a signature.
 
 ## TODO
 
