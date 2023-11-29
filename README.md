@@ -14,7 +14,7 @@ Current status: some playing around with architecture and sources of inspiration
 
 ### Features
 
-- [ ] MILESTONE 1: Create a valid signature via "offline" ceremony given pre-created party setups
+- [x] MILESTONE 1: Create a valid signature via "online" ceremony given pre-created party setups
 - [x] Paillier encryption scheme internal library (minimal)
 - [x] Keyconfig (party setup) data
 - [x] Pedersen
