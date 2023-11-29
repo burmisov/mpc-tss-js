@@ -16,11 +16,12 @@ import {
   pedersenValidateParameters,
 } from '../pedersen.js';
 import {
-  SignPartyInputRound1, SignPartyOutputRound1, SignPartySession,
+  SignPartySession,
   SignRequestSerialized, deserializeSignRequest, newSignSession,
 } from './sign.js';
-import signRound1 from './signRound1.js';
-import { SignPartyInputRound2, SignPartyOutputRound2, SignerRound2 } from './SignerRound2.js';
+import { SignPartyInputRound1, SignPartyOutputRound1 } from './SignerRound1.js';
+import { SignerRound1 } from './SignerRound1.js';
+import { SignPartyOutputRound2, SignerRound2 } from './SignerRound2.js';
 import { SignPartyOutputRound3, SignerRound3 } from './SignerRound3.js';
 import { SignPartyOutputRound4, SignerRound4 } from './SignerRound4.js';
 import { SignPartyOutputRound5, SignerRound5 } from './SignerRound5.js';
@@ -272,17 +273,17 @@ describe('sign', () => {
   });
 
   it('does round 1', () => {
-    const resultA = signRound1(inputForRound1A, sessionA);
-    sessionA = resultA.session;
-    round1outputA = resultA.roundOutput;
+    const signerRound1A = new SignerRound1(sessionA, inputForRound1A);
+    round1outputA = signerRound1A.process();
+    sessionA = signerRound1A.session;
 
-    const resultB = signRound1(inputForRound1B, sessionB);
-    sessionB = resultB.session;
-    round1outputB = resultB.roundOutput;
+    const signerRound1B = new SignerRound1(sessionB, inputForRound1B);
+    round1outputB = signerRound1B.process();
+    sessionB = signerRound1B.session;
 
-    const resultC = signRound1(inputForRound1C, sessionC);
-    sessionC = resultC.session;
-    round1outputC = resultC.roundOutput;
+    const signerRound1C = new SignerRound1(sessionC, inputForRound1C);
+    round1outputC = signerRound1C.process();
+    sessionC = signerRound1C.session;
   });
 
   it('does round 2', () => {

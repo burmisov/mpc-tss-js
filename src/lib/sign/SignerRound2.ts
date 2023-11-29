@@ -1,4 +1,4 @@
-import { SignPartyInputRound1 } from './sign.js';
+import { SignPartyInputRound1 } from './SignerRound1.js';
 import { AffinePoint } from "../common.types.js";
 import { SignPartySession } from "./sign.js";
 import { PartyId, otherPartyIds } from '../keyConfig.js';

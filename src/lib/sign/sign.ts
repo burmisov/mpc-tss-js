@@ -1,17 +1,11 @@
 import { blake3 } from '@noble/hashes/blake3';
 import { hexToBytes } from '@noble/hashes/utils';
 
-import { AffinePoint } from "../common.types.js"
 import { PartyId, PartySecretKeyConfig } from "../keyConfig.js";
-import { PaillierPublicKey, PaillierSecretKey } from "../paillier.js"
-import { PedersenParameters } from "../pedersen.js"
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { lagrange } from '../lagrange.js';
-import { SignPartyInputRound2 } from './SignerRound2.js';
-import { SignBroadcastForRound2, SignMessageForRound2 } from './SignerRound2.js';
 import Fn from '../Fn.js';
-
-const Fp = secp256k1.CURVE.Fp;
+import { SignPartyInputRound1 } from './SignerRound1.js';
 
 type Hasher = ReturnType<typeof blake3.create>;
 
@@ -38,24 +32,6 @@ export const deserializeSignRequest = (
     // },
     signerIds: serialized.signerIds,
   };
-};
-
-export type SignPartyInputRound1 = {
-  publicKey: AffinePoint,
-  secretEcdsa: bigint,
-  secretPaillier: PaillierSecretKey,
-  partiesPublic: Record<string, {
-    paillier: PaillierPublicKey,
-    pedersen: PedersenParameters,
-    ecdsa: AffinePoint,
-  }>,
-  message: Uint8Array,
-};
-
-export type SignPartyOutputRound1 = {
-  broadcasts: [SignBroadcastForRound2],
-  messages: Array<SignMessageForRound2>,
-  inputForRound2: SignPartyInputRound2,
 };
 
 export type SignPartySession = {

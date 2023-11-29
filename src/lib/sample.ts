@@ -1,6 +1,9 @@
 import { bitLength, gcd, randBytesSync, randBitsSync } from 'bigint-crypto-utils';
 
 import Fn from './Fn.js';
+import { secp256k1 } from "@noble/curves/secp256k1";
+import { randBetween } from "bigint-crypto-utils";
+import { AffinePoint } from "./common.types.js";
 
 const SEC_PARAM = 256;
 const L = 1 * SEC_PARAM; // = 256
@@ -56,3 +59,11 @@ export const sampleNeg = (bits: number): bigint => {
   const result = Fn.mod(sign ? -rest : rest);
   return result;
 };
+
+export const sampleScalarPointPair = (): [bigint, AffinePoint] => {
+  const scalar = randBetween(Fn.N - 1n);
+  const point = secp256k1.ProjectivePoint.BASE.multiply(scalar);
+  return [scalar, point.toAffine()];
+};
+
+export const sampleScalar = (): bigint => randBetween(Fn.N - 1n);
