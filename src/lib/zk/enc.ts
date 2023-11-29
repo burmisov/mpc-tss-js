@@ -12,6 +12,7 @@ import {
   sampleIntervalLepsN
 } from "../sample.js";
 import { Hasher } from "../Hasher.js";
+import { hash } from "@noble/hashes/_assert";
 
 export type ZkEncPublic = {
   K: bigint, // Paillier ciphertext
@@ -64,6 +65,7 @@ export const zkEncSerializeProof = (proof: ZkEncProof): ZkEncProofSerialized => 
 export const zkEncCreateProof = (
   pub: ZkEncPublic,
   priv: ZkEncPrivate,
+  hasher: Hasher,
 ): ZkEncProof => {
   const alpha = sampleIntervalLeps();
   const r = sampleUnitModN(pub.prover.n);
@@ -78,7 +80,7 @@ export const zkEncCreateProof = (
     C: pedersenCommit(pub.aux, alpha, gamma),
   };
 
-  const e = challenge(pub, commitment);
+  const e = challenge(pub, commitment, hasher);
 
   const Z1 = priv.k * e + alpha;
   const Z2 = modMultiply(
@@ -99,11 +101,12 @@ export const zkEncCreateProof = (
 export const zkEncVerifyProof = (
   proof: ZkEncProof,
   pub: ZkEncPublic,
+  hasher: Hasher,
 ): boolean => {
   if (!zkEncIsPublicValid(proof, pub)) { return false; }
   if (!isInIntervalLeps(proof.Z1)) { return false; }
 
-  const e = challenge(pub, proof.commitment);
+  const e = challenge(pub, proof.commitment, hasher);
   if (!pedersenVerify(
     pub.aux, proof.Z1, proof.Z3, e, proof.commitment.C, proof.commitment.S,
   )) {
@@ -133,8 +136,9 @@ export const zkEncIsPublicValid = (
 const challenge = (
   pub: ZkEncPublic,
   commitment: ZkEncCommitment,
+  hasher: Hasher,
 ): bigint => {
-  const bigHash = Hasher.create().updateMulti([
+  const bigHash = hasher.updateMulti([
     pub.aux,
     pub.prover,
     pub.K,

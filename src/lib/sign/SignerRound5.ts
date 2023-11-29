@@ -2,8 +2,8 @@ import Fn from "../Fn.js";
 import { AffinePoint } from "../common.types.js";
 import { PartyId } from "../keyConfig.js";
 import { SignInputForRound4 } from "./SignerRound4.js";
-import { SignPartySession } from "./sign.js";
 import { verifySignature } from "../curve.js";
+import { SignSession } from "./SignSession.js";
 
 export type SignBroadcastForRound5 = {
   from: PartyId,
@@ -26,12 +26,12 @@ export type SignPartyOutputRound5 = {
 };
 
 export class SignerRound5 {
-  public session: SignPartySession;
+  public session: SignSession;
   private roundInput: SignInputForRound5;
 
   private SigmaShares: Record<PartyId, bigint> = {};
 
-  constructor(session: SignPartySession, roundInput: SignInputForRound5) {
+  constructor(session: SignSession, roundInput: SignInputForRound5) {
     this.roundInput = roundInput;
     this.session = session;
   }

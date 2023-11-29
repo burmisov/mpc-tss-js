@@ -1,6 +1,4 @@
-import {
-  SignPartySession,
-} from "./sign.js";
+import { SignSession } from "./SignSession.js";
 import {
   SignBroadcastForRound2,
   SignMessageForRound2,
@@ -34,11 +32,11 @@ export type SignPartyOutputRound1 = {
 };
 
 export class SignerRound1 {
-  public session: SignPartySession;
+  public session: SignSession;
   private roundInput: SignPartyInputRound1;
 
   constructor(
-    session: SignPartySession,
+    session: SignSession,
     roundInput: SignPartyInputRound1,
   ) {
     this.session = session;
@@ -81,7 +79,11 @@ export class SignerRound1 {
           k: KShare,
           rho: KNonce,
         };
-        const proof = zkEncCreateProof(zkPublic, zkPrivate);
+        const proof = zkEncCreateProof(
+          zkPublic,
+          zkPrivate,
+          this.session.cloneHashForId(this.session.selfId),
+        );
         const message: SignMessageForRound2 = {
           from: this.session.selfId,
           to: partyId,

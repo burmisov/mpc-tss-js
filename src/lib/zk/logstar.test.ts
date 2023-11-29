@@ -13,6 +13,7 @@ import {
 import { secp256k1 } from "@noble/curves/secp256k1";
 import { randBetween } from "bigint-crypto-utils";
 import Fn from "../Fn.js";
+import { Hasher } from "../Hasher.js";
 
 describe("zk/enc", () => {
   it("create proof and verify", async () => {
@@ -40,9 +41,11 @@ describe("zk/enc", () => {
       X: x, Rho: rho,
     };
 
-    const proof = zkLogstarCreateProof(pub, priv);
+    const hasher = Hasher.create().update('test');
 
-    const verified = zkLogstarVerifyProof(proof, pub);
+    const proof = zkLogstarCreateProof(pub, priv, hasher.clone());
+
+    const verified = zkLogstarVerifyProof(proof, pub, hasher.clone());
 
     assert.equal(verified, true, 'Proof verification failed');
   });

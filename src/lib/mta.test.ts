@@ -14,6 +14,7 @@ import Fn from "./Fn.js";
 import { mtaProveAffG, mtaProveAffP } from "./mta.js";
 import { ZkAffgPublic, zkAffgVerifyProof } from "./zk/affg.js";
 import { ZkAffpPublic, zkAffpVerifyProof } from "./zk/affp.js";
+import { Hasher } from "./Hasher.js";
 
 describe('mta', async () => {
   let proverPaillierSecretKey: PaillierSecretKey;
@@ -78,18 +79,20 @@ describe('mta', async () => {
   }
 
   it('proves AffG', () => {
+    const hasher = Hasher.create().update('test');
+
     const Ai = secp256k1.ProjectivePoint.BASE.multiply(ai).toAffine();
     const Aj = secp256k1.ProjectivePoint.BASE.multiply(aj).toAffine();
 
     const {
       Beta: betaI, D: Di, F: Fi, proof: proofI,
     } = mtaProveAffG(
-      ai, Ai, Bj, ski, paillierJ, verifierPedersen,
+      ai, Ai, Bj, ski, paillierJ, verifierPedersen, hasher.clone(),
     );
     const {
       Beta: betaJ, D: Dj, F: Fj, proof: proofJ,
     } = mtaProveAffG(
-      aj, Aj, Bi, skj, paillierI, verifierPedersen,
+      aj, Aj, Bi, skj, paillierI, verifierPedersen, hasher.clone(),
     );
 
     const pubI: ZkAffgPublic = {
@@ -101,7 +104,7 @@ describe('mta', async () => {
       verifier: paillierJ,
       aux: verifierPedersen,
     };
-    const verifiedI = zkAffgVerifyProof(proofI, pubI);
+    const verifiedI = zkAffgVerifyProof(proofI, pubI, hasher.clone(),);
     assert.strictEqual(verifiedI, true, "Proof I verification failed");
 
     const pubJ: ZkAffgPublic = {
@@ -113,24 +116,26 @@ describe('mta', async () => {
       verifier: paillierI,
       aux: verifierPedersen,
     };
-    const verifiedJ = zkAffgVerifyProof(proofJ, pubJ);
+    const verifiedJ = zkAffgVerifyProof(proofJ, pubJ, hasher.clone(),);
     assert.strictEqual(verifiedJ, true, "Proof J verification failed");
 
     verifyMta(Di, Dj, betaI, betaJ);
   });
 
   it('proves AffP', () => {
+    const hasher = Hasher.create().update('test');
+
     const { ciphertext: Ai, nonce: nonceI } = paillierEncrypt(ski.publicKey, ai);
     const { ciphertext: Aj, nonce: nonceJ } = paillierEncrypt(skj.publicKey, aj);
     const {
       Beta: betaI, D: Di, F: Fi, proof: proofI,
     } = mtaProveAffP(
-      ai, Ai, nonceI, Bj, ski, paillierJ, verifierPedersen,
+      ai, Ai, nonceI, Bj, ski, paillierJ, verifierPedersen, hasher.clone(),
     );
     const {
       Beta: betaJ, D: Dj, F: Fj, proof: proofJ,
     } = mtaProveAffP(
-      aj, Aj, nonceJ, Bi, skj, paillierI, verifierPedersen,
+      aj, Aj, nonceJ, Bi, skj, paillierI, verifierPedersen, hasher.clone(),
     );
 
     const pubI: ZkAffpPublic = {
@@ -142,7 +147,7 @@ describe('mta', async () => {
       verifier: paillierJ,
       aux: verifierPedersen,
     };
-    const verifiedI = zkAffpVerifyProof(proofI, pubI);
+    const verifiedI = zkAffpVerifyProof(proofI, pubI, hasher.clone());
     assert.strictEqual(verifiedI, true, "Proof I verification failed");
 
     const pubJ: ZkAffpPublic = {
@@ -154,7 +159,7 @@ describe('mta', async () => {
       verifier: paillierI,
       aux: verifierPedersen,
     };
-    const verifiedJ = zkAffpVerifyProof(proofJ, pubJ);
+    const verifiedJ = zkAffpVerifyProof(proofJ, pubJ, hasher.clone());
     assert.strictEqual(verifiedJ, true, "Proof J verification failed");
 
     verifyMta(Di, Dj, betaI, betaJ);

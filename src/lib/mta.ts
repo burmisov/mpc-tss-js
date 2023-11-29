@@ -1,3 +1,4 @@
+import { Hasher } from "./Hasher.js";
 import { AffinePoint } from "./common.types.js";
 import {
   PaillierPublicKey, PaillierSecretKey,
@@ -19,6 +20,7 @@ export const mtaProveAffG = (
   sender: PaillierSecretKey,
   receiver: PaillierPublicKey,
   verifier: PedersenParameters,
+  hasher: Hasher,
 ): {
   Beta: bigint,
   D: bigint, // Ciphertext
@@ -44,7 +46,7 @@ export const mtaProveAffG = (
     S,
     R,
   };
-  const proof = zkAffgCreateProof(pub, priv);
+  const proof = zkAffgCreateProof(pub, priv, hasher);
 
   const Beta = -BetaNeg;
 
@@ -59,6 +61,7 @@ export const mtaProveAffP = (
   sender: PaillierSecretKey,
   receiver: PaillierPublicKey,
   verifier: PedersenParameters,
+  hasher: Hasher,
 ): {
   Beta: bigint,
   D: bigint, // Ciphertext
@@ -85,7 +88,7 @@ export const mtaProveAffP = (
     Rx: senderEncryptedShareNonce,
     R,
   };
-  const proof = zkAffpCreateProof(pub, priv);
+  const proof = zkAffpCreateProof(pub, priv, hasher);
 
   const Beta = -BetaNeg;
 

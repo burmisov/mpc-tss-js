@@ -66,6 +66,7 @@ const isValid = (proof: ZkAffpProof, pub: ZkAffpPublic): boolean => {
 export const zkAffpCreateProof = (
   pub: ZkAffpPublic,
   priv: ZkAffpPrivate,
+  hasher: Hasher,
 ): ZkAffpProof => {
   const N0 = pub.verifier.n;
   const N1 = pub.prover.n;
@@ -99,7 +100,7 @@ export const zkAffpCreateProof = (
 
   const commitment: ZkAffpCommitment = { A, Bx, By, E, S, F, T };
 
-  const e = challenge(pub, commitment);
+  const e = challenge(pub, commitment, hasher);
 
   const Z1 = priv.X * e + alpha;
   const Z2 = priv.Y * e + beta;
@@ -112,13 +113,17 @@ export const zkAffpCreateProof = (
   return { commitment, Z1, Z2, Z3, Z4, W, Wx, Wy };
 };
 
-export const zkAffpVerifyProof = (proof: ZkAffpProof, pub: ZkAffpPublic): boolean => {
+export const zkAffpVerifyProof = (
+  proof: ZkAffpProof,
+  pub: ZkAffpPublic,
+  hasher: Hasher,
+): boolean => {
   if (!isValid(proof, pub)) { return false; }
 
   if (!isInIntervalLeps(proof.Z1)) { return false; }
   if (!isInIntervalLprimeEps(proof.Z2)) { return false; }
 
-  const e = challenge(pub, proof.commitment);
+  const e = challenge(pub, proof.commitment, hasher);
 
   {
     const lhs = paillierAdd(
@@ -169,8 +174,12 @@ export const zkAffpVerifyProof = (proof: ZkAffpProof, pub: ZkAffpPublic): boolea
   return true;
 };
 
-const challenge = (pub: ZkAffpPublic, commitment: ZkAffpCommitment): bigint => {
-  const bigHash = Hasher.create().updateMulti([
+const challenge = (
+  pub: ZkAffpPublic,
+  commitment: ZkAffpCommitment,
+  hasher: Hasher,
+): bigint => {
+  const bigHash = hasher.updateMulti([
     pub.aux,
     pub.prover,
     pub.verifier,

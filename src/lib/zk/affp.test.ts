@@ -11,6 +11,7 @@ import { sampleIntervalL } from "../sample.js";
 import {
   ZkAffpPrivate, ZkAffpPublic, zkAffpCreateProof, zkAffpVerifyProof,
 } from "./affp.js";
+import { Hasher } from "../Hasher.js";
 
 describe("zk/affp", () => {
   it("create proof and verify", async () => {
@@ -76,9 +77,11 @@ describe("zk/affp", () => {
       R: rhoY,
     };
 
-    const proof = zkAffpCreateProof(pub, priv);
+    const hasher = Hasher.create().update('test');
 
-    const verified = zkAffpVerifyProof(proof, pub);
+    const proof = zkAffpCreateProof(pub, priv, hasher.clone());
+
+    const verified = zkAffpVerifyProof(proof, pub, hasher.clone());
 
     assert.equal(verified, true, "Proof verification failed");
   });

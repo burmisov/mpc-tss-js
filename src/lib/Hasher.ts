@@ -13,8 +13,8 @@ export class Hasher {
   private hash: ReturnType<typeof blake3.create>;
   private used: boolean = false;
 
-  constructor() {
-    this.hash = blake3.create({}); // TODO: pass params?
+  constructor(hash?: ReturnType<typeof blake3.create>) {
+    this.hash = hash ?? blake3.create({});
   }
 
   public static create(): Hasher {
@@ -37,6 +37,10 @@ export class Hasher {
     this.checkUsed();
     this.used = true;
     return bytesToNumberBE(this.hash.digest());
+  }
+
+  public clone(): Hasher {
+    return new Hasher(this.hash.clone());
   }
 
   private updateBasic(data: IngestableBasic): Hasher {

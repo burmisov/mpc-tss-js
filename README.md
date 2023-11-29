@@ -31,13 +31,13 @@ Current status: some playing around with architecture and sources of inspiration
 - [x] Signing Round 5
 - [ ] Covert to Ethereum signature and verify with external tool
 - [ ] Fix session hashing
+- [ ] BIP32 signing
 - [ ] Refactor and cleanup
 - [ ] ZK Proofs -- others
 - [ ] Blake3-based hasher class?
 - [ ] Devise a predictable Error model
 - [ ] ECDSA with secp256k1 utils (use/wrap @noble/curves ?)
 - [ ] ElGamal
-- [ ] BIP32
 - [ ] Oblivious Transfer
 - [ ] Signing round data and implementations
 - [ ] MILESTONE 2: Implement a key generation ceremony; generate valid party setups and create a valid signature

@@ -6,9 +6,9 @@ import {
   ZkLogstarProof, ZkLogstarPublic, zkLogstarVerifyProof,
 } from "../zk/logstar.js";
 import { SignInputForRound3 } from "./SignerRound3.js";
-import { SignPartySession } from "./sign.js";
 import Fn from "../Fn.js";
 import { SignBroadcastForRound5, SignInputForRound5 } from "./SignerRound5.js";
+import { SignSession } from "./SignSession.js";
 
 export type SignBroadcastForRound4 = {
   from: PartyId;
@@ -37,13 +37,13 @@ export type SignPartyOutputRound4 = {
 };
 
 export class SignerRound4 {
-  public session: SignPartySession;
+  public session: SignSession;
   private roundInput: SignInputForRound4;
 
   private DeltaShares: Record<PartyId, bigint> = {};
   private BigDeltaShares: Record<PartyId, AffinePoint> = {};
 
-  constructor(session: SignPartySession, roundInput: SignInputForRound4) {
+  constructor(session: SignSession, roundInput: SignInputForRound4) {
     this.roundInput = roundInput;
     this.session = session;
   }
@@ -68,7 +68,9 @@ export class SignerRound4 {
       prover: pubData[msg.from].paillier,
       aux: pubData[msg.to].pedersen,
     };
-    const verified = zkLogstarVerifyProof(msg.ProofLog, pub);
+    const verified = zkLogstarVerifyProof(
+      msg.ProofLog, pub, this.session.cloneHashForId(msg.from),
+    );
     if (!verified) {
       throw new Error(`${msg.to}: Invalid log proof from ${msg.from}`);
     }

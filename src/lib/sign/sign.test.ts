@@ -15,16 +15,14 @@ import {
   PedersenParametersSerialized, pedersenParametersFromSerialized,
   pedersenValidateParameters,
 } from '../pedersen.js';
-import {
-  SignPartySession,
-  SignRequestSerialized, deserializeSignRequest, newSignSession,
-} from './sign.js';
+import { SignRequestSerialized, deserializeSignRequest } from './sign.js';
 import { SignPartyInputRound1, SignPartyOutputRound1 } from './SignerRound1.js';
 import { SignerRound1 } from './SignerRound1.js';
 import { SignPartyOutputRound2, SignerRound2 } from './SignerRound2.js';
 import { SignPartyOutputRound3, SignerRound3 } from './SignerRound3.js';
 import { SignPartyOutputRound4, SignerRound4 } from './SignerRound4.js';
 import { SignPartyOutputRound5, SignerRound5 } from './SignerRound5.js';
+import { SignSession } from './SignSession.js';
 
 const publicKeyConfigA: PartyPublicKeyConfigSerialized = {
   partyId: 'a',
@@ -229,7 +227,7 @@ describe('sign', () => {
   });
 
   let partyConfigA: PartySecretKeyConfig;
-  let sessionA: SignPartySession;
+  let sessionA: SignSession;
   let inputForRound1A: SignPartyInputRound1;
   let round1outputA: SignPartyOutputRound1;
   let round2outputA: SignPartyOutputRound2;
@@ -238,7 +236,7 @@ describe('sign', () => {
   let round5outputA: SignPartyOutputRound5;
 
   let partyConfigB: PartySecretKeyConfig;
-  let sessionB: SignPartySession;
+  let sessionB: SignSession;
   let inputForRound1B: SignPartyInputRound1;
   let round1outputB: SignPartyOutputRound1;
   let round2outputB: SignPartyOutputRound2;
@@ -247,7 +245,7 @@ describe('sign', () => {
   let round5outputB: SignPartyOutputRound5;
 
   let partyConfigC: PartySecretKeyConfig;
-  let sessionC: SignPartySession;
+  let sessionC: SignSession;
   let inputForRound1C: SignPartyInputRound1;
   let round1outputC: SignPartyOutputRound1;
   let round2outputC: SignPartyOutputRound2;
@@ -257,19 +255,16 @@ describe('sign', () => {
 
   it('prepares session', () => {
     partyConfigA = deserializePartySecretKeyConfig(secretKeyConfigA);
-    const resultA = newSignSession(signRequest, partyConfigA);
-    sessionA = resultA.session;
-    inputForRound1A = resultA.inputForRound1;
+    sessionA = new SignSession(signRequest, partyConfigA);
+    inputForRound1A = sessionA.inputForRound1;
 
     partyConfigB = deserializePartySecretKeyConfig(secretKeyConfigB);
-    const resultB = newSignSession(signRequest, partyConfigB);
-    sessionB = resultB.session;
-    inputForRound1B = resultB.inputForRound1;
+    sessionB = new SignSession(signRequest, partyConfigB);
+    inputForRound1B = sessionB.inputForRound1;
 
     partyConfigC = deserializePartySecretKeyConfig(secretKeyConfigC);
-    const resultC = newSignSession(signRequest, partyConfigC);
-    sessionC = resultC.session;
-    inputForRound1C = resultC.inputForRound1;
+    sessionC = new SignSession(signRequest, partyConfigC);
+    inputForRound1C = sessionC.inputForRound1;
   });
 
   it('does round 1', () => {

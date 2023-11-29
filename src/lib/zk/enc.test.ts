@@ -10,6 +10,7 @@ import {
   paillierEncrypt, paillierGeneratePedersen,
   paillierSecretKeyFromPrimes, validatePaillierPrime,
 } from "../paillier.js";
+import { Hasher } from "../Hasher.js";
 
 
 describe("zk/enc", () => {
@@ -34,9 +35,11 @@ describe("zk/enc", () => {
       k, rho,
     };
 
-    const proof = zkEncCreateProof(zkEncPublic, zkEncPrivate);
+    const hasher = Hasher.create().update('test');
 
-    const verified = zkEncVerifyProof(proof, zkEncPublic);
+    const proof = zkEncCreateProof(zkEncPublic, zkEncPrivate, hasher.clone());
+
+    const verified = zkEncVerifyProof(proof, zkEncPublic, hasher.clone());
 
     assert.equal(verified, true, 'Proof verification failed');
   });

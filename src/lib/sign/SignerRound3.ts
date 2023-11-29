@@ -6,7 +6,6 @@ import {
   ZkLogstarPrivate, ZkLogstarProof, ZkLogstarPublic,
   zkLogstarCreateProof, zkLogstarVerifyProof,
 } from "../zk/logstar.js";
-import { SignPartySession } from "./sign.js";
 import { isIdentity } from "../curve.js";
 import { SignPartyInputRound2 } from "./SignerRound2.js";
 import { paillierDecrypt } from "../paillier.js";
@@ -14,6 +13,7 @@ import Fn from "../Fn.js";
 import {
   SignBroadcastForRound4, SignInputForRound4, SignMessageForRound4,
 } from "./SignerRound4.js";
+import { SignSession } from "./SignSession.js";
 
 export type SignBroadcastForRound3 = {
   from: PartyId;
@@ -48,14 +48,14 @@ export type SignPartyOutputRound3 = {
 };
 
 export class SignerRound3 {
-  public session: SignPartySession;
+  public session: SignSession;
   private roundInput: SignInputForRound3;
 
   private BigGammaShare: Record<PartyId, AffinePoint> = {};
   private DeltaShareAlpha: Record<PartyId, bigint> = {};
   private ChiShareAlpha: Record<PartyId, bigint> = {};
 
-  constructor(session: SignPartySession, roundInput: SignInputForRound3) {
+  constructor(session: SignSession, roundInput: SignInputForRound3) {
     this.roundInput = roundInput;
     this.session = session;
   }
@@ -87,7 +87,9 @@ export class SignerRound3 {
       verifier: pubData[msg.to].paillier,
       aux: pubData[msg.to].pedersen,
     };
-    const deltaVerified = zkAffgVerifyProof(msg.DeltaProof, deltaAffgPub);
+    const deltaVerified = zkAffgVerifyProof(
+      msg.DeltaProof, deltaAffgPub, this.session.cloneHashForId(msg.from),
+    );
     if (!deltaVerified) {
       throw new Error(`Failed to validate affg proof for Delta MtA from ${msg.from}`);
     }
@@ -101,7 +103,9 @@ export class SignerRound3 {
       verifier: pubData[msg.to].paillier,
       aux: pubData[msg.to].pedersen,
     };
-    const chiVerified = zkAffgVerifyProof(msg.ChiProof, chiAffgPub);
+    const chiVerified = zkAffgVerifyProof(
+      msg.ChiProof, chiAffgPub, this.session.cloneHashForId(msg.from),
+    );
     if (!chiVerified) {
       throw new Error(`Failed to validate affg proof for Chi MtA from ${msg.from}`);
     }
@@ -112,7 +116,9 @@ export class SignerRound3 {
       prover: pubData[msg.from].paillier,
       aux: pubData[msg.to].pedersen,
     };
-    const logVerified = zkLogstarVerifyProof(msg.ProofLog, logPub);
+    const logVerified = zkLogstarVerifyProof(
+      msg.ProofLog, logPub, this.session.cloneHashForId(msg.from),
+    );
     if (!logVerified) {
       throw new Error(`Failed to validate log proof from ${msg.from}`);
     }
@@ -180,7 +186,9 @@ export class SignerRound3 {
         prover: pubData[this.session.selfId].paillier,
         aux: pubData[partyId].pedersen,
       };
-      const proof = zkLogstarCreateProof(pub, priv);
+      const proof = zkLogstarCreateProof(
+        pub, priv, this.session.cloneHashForId(this.session.selfId),
+      );
       messages.push({
         from: this.session.selfId,
         to: partyId,

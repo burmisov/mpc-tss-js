@@ -15,6 +15,7 @@ import {
   ZkAffgPrivate, ZkAffgPublic,
   zkAffgCreateProof, zkAffgVerifyProof,
 } from "./affg.js";
+import { Hasher } from "../Hasher.js";
 
 describe("zk/affg", () => {
   it("create proof and verify", async () => {
@@ -71,9 +72,11 @@ describe("zk/affg", () => {
       R: rhoY,
     };
 
-    const proof = zkAffgCreateProof(pub, priv);
+    const hasher = Hasher.create().update('test');
 
-    const verified = zkAffgVerifyProof(proof, pub);
+    const proof = zkAffgCreateProof(pub, priv, hasher.clone());
+
+    const verified = zkAffgVerifyProof(proof, pub, hasher.clone());
 
     assert.equal(verified, true, 'Proof verification failed');
   });

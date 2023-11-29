@@ -74,6 +74,7 @@ export const zkAffgIsProofValid = (
 export const zkAffgCreateProof = (
   pub: ZkAffgPublic,
   priv: ZkAffgPrivate,
+  hasher: Hasher,
 ): ZkAffgProof => {
   const N0 = pub.verifier.n;
   const N1 = pub.prover.n;
@@ -106,7 +107,7 @@ export const zkAffgCreateProof = (
 
   const commitment: ZkAffgCommitment = { A, Bx, By, E, S, F, T };
 
-  const e = challenge(pub, commitment);
+  const e = challenge(pub, commitment, hasher);
 
   const Z1 = priv.X * e + alpha;
   const Z2 = priv.Y * e + beta;
@@ -135,12 +136,13 @@ export const zkAffgCreateProof = (
 export const zkAffgVerifyProof = (
   proof: ZkAffgProof,
   pub: ZkAffgPublic,
+  hasher: Hasher,
 ): boolean => {
   if (!zkAffgIsProofValid(proof, pub)) { return false; }
   if (!isInIntervalLeps(proof.Z1)) { return false; }
   if (!isInIntervalLprimeEps(proof.Z2)) { return false; }
 
-  const e = challenge(pub, proof.commitment);
+  const e = challenge(pub, proof.commitment, hasher);
 
   if (!pedersenVerify(
     pub.aux, proof.Z1, proof.Z3, e, proof.commitment.E, proof.commitment.S
@@ -197,8 +199,9 @@ export const zkAffgVerifyProof = (
 const challenge = (
   pub: ZkAffgPublic,
   commitment: ZkAffgCommitment,
+  hasher: Hasher,
 ): bigint => {
-  const bigHash = Hasher.create().updateMulti([
+  const bigHash = hasher.updateMulti([
     pub.aux,
     pub.prover,
     pub.verifier,

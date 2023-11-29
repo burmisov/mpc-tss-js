@@ -1,6 +1,5 @@
 import { SignPartyInputRound1 } from './SignerRound1.js';
 import { AffinePoint } from "../common.types.js";
-import { SignPartySession } from "./sign.js";
 import { PartyId, otherPartyIds } from '../keyConfig.js';
 import { ZkEncProof, ZkEncPublic, zkEncVerifyProof } from '../zk/enc.js';
 import { validateCiphertext } from '../paillier.js';
@@ -11,6 +10,7 @@ import { mtaProveAffG } from '../mta.js';
 import {
   ZkLogstarPrivate, ZkLogstarPublic, zkLogstarCreateProof,
 } from '../zk/logstar.js';
+import { SignSession } from './SignSession.js';
 
 export type SignPartyInputRound2 = {
   inputForRound1: SignPartyInputRound1;
@@ -42,13 +42,13 @@ export type SignPartyOutputRound2 = {
 };
 
 export class SignerRound2 {
-  public session: SignPartySession;
+  public session: SignSession;
   private roundInput: SignPartyInputRound2;
 
   private K: Record<PartyId, bigint> = {};
   private G: Record<PartyId, bigint> = {};
 
-  constructor(session: SignPartySession, roundInput: SignPartyInputRound2) {
+  constructor(session: SignSession, roundInput: SignPartyInputRound2) {
     this.roundInput = roundInput;
     this.session = session;
   }
@@ -81,7 +81,7 @@ export class SignerRound2 {
       prover: this.roundInput.inputForRound1.partiesPublic[msg.from].paillier,
       aux: this.roundInput.inputForRound1.partiesPublic[msg.to].pedersen,
     };
-    const verified = zkEncVerifyProof(proof, pub);
+    const verified = zkEncVerifyProof(proof, pub, this.session.cloneHashForId(msg.from));
 
     if (!verified) {
       throw new Error(`Invalid proof from party ${msg.from}`);
@@ -117,6 +117,7 @@ export class SignerRound2 {
         this.roundInput.inputForRound1.secretPaillier,
         pubData[partyId].paillier,
         pubData[partyId].pedersen,
+        this.session.cloneHashForId(this.session.selfId),
       );
 
       const {
@@ -131,6 +132,7 @@ export class SignerRound2 {
         this.roundInput.inputForRound1.secretPaillier,
         pubData[partyId].paillier,
         pubData[partyId].pedersen,
+        this.session.cloneHashForId(this.session.selfId),
       );
 
       const pub: ZkLogstarPublic = {
@@ -143,7 +145,9 @@ export class SignerRound2 {
         X: this.roundInput.GammaShare,
         Rho: this.roundInput.GNonce,
       };
-      const proof = zkLogstarCreateProof(pub, priv);
+      const proof = zkLogstarCreateProof(
+        pub, priv, this.session.cloneHashForId(this.session.selfId),
+      );
 
       messages.push({
         from: this.session.selfId,

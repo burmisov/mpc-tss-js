@@ -55,6 +55,7 @@ export const zkLogstarIsProofValid = (
 export const zkLogstarCreateProof = (
   pubIn: ZkLogstarPublic,
   priv: ZkLogstarPrivate,
+  hasher: Hasher,
 ): ZkLogstarProof => {
   // TODO optimize
   const pub = {
@@ -75,7 +76,7 @@ export const zkLogstarCreateProof = (
     D: pedersenCommit(pub.aux, alpha, gamma),
   };
 
-  const e = challenge(pub, commitment);
+  const e = challenge(pub, commitment, hasher);
 
   const Z1 = priv.X * e + alpha;
   const Z2 = modMultiply(
@@ -100,6 +101,7 @@ export const zkLogstarCreateProof = (
 export const zkLogstarVerifyProof = (
   proof: ZkLogstarProof,
   pubIn: ZkLogstarPublic,
+  hasher: Hasher,
 ): boolean => {
   const pub = {
     ...pubIn,
@@ -110,7 +112,7 @@ export const zkLogstarVerifyProof = (
 
   if (!isInIntervalLeps(proof.Z1)) { return false; }
 
-  const e = challenge(pub, proof.commitment);
+  const e = challenge(pub, proof.commitment, hasher);
 
   if (!pedersenVerify(
     pub.aux, proof.Z1, proof.Z3, e, proof.commitment.D, proof.commitment.S,
@@ -129,8 +131,9 @@ export const zkLogstarVerifyProof = (
 const challenge = (
   pub: ZkLogstarPublic,
   commitment: ZkLogstarCommitment,
+  hasher: Hasher,
 ): bigint => {
-  const bigHash = Hasher.create().updateMulti([
+  const bigHash = hasher.updateMulti([
     pub.aux,
     pub.prover,
     pub.C,
