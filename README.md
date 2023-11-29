@@ -29,7 +29,7 @@ Current status: some playing around with architecture and sources of inspiration
 - [x] Signing Round 3
 - [x] Signing Round 4
 - [x] Signing Round 5
-- [ ] Covert to Ethereum signature and verify with external tool
+- [x] Covert to Ethereum signature and verify with external tool
 - [x] Fix session hashing
 - [ ] Hashing with domains
 - [ ] BIP32 signing
