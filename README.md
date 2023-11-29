@@ -57,10 +57,32 @@ Current status: some playing around with architecture and sources of inspiration
 - [ ] Lay out motication and prior art
 - [ ] Lay out the goals and the plan
 
-## Plans and Acknowledgements
+## Intellectual Property
 
-My original intention was to do a close-to-code rewrite of ECSDA-related parts of
-"Multi-Party-Sig" from Taurus Group, https://github.com/taurusgroup/multi-party-sig
-Copyright (c) Adrian Hamelink and Taurus SA, 2021, and under Apache 2.0 license.
+Copyright 2023 Sergey Burmisov (burmisov.com)
 
-That library is written in the Go language. After doing some initial tries, I realized that it is not practical to do a close-to-code rewrite in JS due to multiple idiomatic reasons. So I still intend to use the library heavily as a proof-of-concept implementation that I can rely upon, but the code will probably differ quite a lot in the end. I'll see how can I structure the code to balance paying tribute to that library and also making a readable standalone Typescript library, and eager to provide all the proper attribution.
+```
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this work except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+
+Major components of this library are derived from the original Go-language library:
+
+https://github.com/taurusgroup/multi-party-sig
+
+While no original source files are used as-is, many JS/TS files closely rewrite the
+original Go files. Other parts adhere to similar semantics as the original library, and
+other sections are original due to JS/TS idiosyncrasies or simply at the author's
+discretion.
+
+Original Go multi-party-sig copyright notice:  
+copyright (c) Adrian Hamelink and Taurus SA, 2021, and under Apache 2.0 license.

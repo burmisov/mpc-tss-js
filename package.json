@@ -8,7 +8,7 @@
     "test": "node --import tsx --test src/**/*.test.ts src/**/**/*.test.ts"
   },
   "author": "",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@tsconfig/node20": "^20.1.2",
     "@types/node": "^20.9.3",

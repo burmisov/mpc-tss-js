@@ -1,12 +1,3 @@
-/* mpc-tss-js - MIT License (c) 2023 Sergey Burmisov (burmisov.com) */
-
-/*
-  https://en.wikipedia.org/wiki/Paillier_cryptosystem
-
-  Original paper by Pascal Paillier:
-  https://doi.org/10.1007%2F3-540-48910-X_16
-*/
-
 // TODO: Add proper comments
 // TODO: Implement decryption with randomness
 // TODO: Optimize using known values of p and q
