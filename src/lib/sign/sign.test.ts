@@ -152,7 +152,7 @@ const signRequestSerialized: SignRequestSerialized = {
   signerIds: ['a', 'b', 'c'],
 }
 
-describe('sign', () => {
+describe('sign 3/3 (all parties)', () => {
   const signRequest = deserializeSignRequest(signRequestSerialized);
 
   const checkPaillierFixture = (
@@ -422,6 +422,160 @@ describe('sign', () => {
 
     assert.deepEqual(round5outputA, round5outputB);
     assert.deepEqual(round5outputB, round5outputC);
+  });
+
+  // check signature/recover address with a major ethereum library
+  it('signatures check', () => {
+    const pubPoint = getPublicPoint(partyConfigA.publicPartyData);
+    const address = ethAddress(pubPoint);
+
+    const ethSig = sigEthereum(round5outputA.signature.R, round5outputA.signature.S);
+
+    const addressRec = ethers.recoverAddress(
+      signRequest.message, '0x' + bytesToHex(ethSig)
+    ).toLowerCase();
+
+    assert.strictEqual(address, addressRec);
+  });
+});
+
+describe('sign 2/3', () => {
+  const signRequest2of3serialized: SignRequestSerialized = {
+    messageHex: bytesToHex(keccak_256(messageToSign)),
+    signerIds: ['a', 'b'],
+  };
+
+  const signRequest = deserializeSignRequest(signRequest2of3serialized);
+
+  let partyConfigA: PartySecretKeyConfig;
+  let sessionA: SignSession;
+  let inputForRound1A: SignPartyInputRound1;
+  let round1outputA: SignPartyOutputRound1;
+  let round2outputA: SignPartyOutputRound2;
+  let round3outputA: SignPartyOutputRound3;
+  let round4outputA: SignPartyOutputRound4;
+  let round5outputA: SignPartyOutputRound5;
+
+  let partyConfigB: PartySecretKeyConfig;
+  let sessionB: SignSession;
+  let inputForRound1B: SignPartyInputRound1;
+  let round1outputB: SignPartyOutputRound1;
+  let round2outputB: SignPartyOutputRound2;
+  let round3outputB: SignPartyOutputRound3;
+  let round4outputB: SignPartyOutputRound4;
+  let round5outputB: SignPartyOutputRound5;
+
+  it('prepares session', () => {
+    partyConfigA = deserializePartySecretKeyConfig(secretKeyConfigA);
+    sessionA = new SignSession(signRequest, partyConfigA);
+    inputForRound1A = sessionA.inputForRound1;
+
+    partyConfigB = deserializePartySecretKeyConfig(secretKeyConfigB);
+    sessionB = new SignSession(signRequest, partyConfigB);
+    inputForRound1B = sessionB.inputForRound1;
+  });
+
+  it('does round 1', () => {
+    const signerRound1A = new SignerRound1(sessionA, inputForRound1A);
+    round1outputA = signerRound1A.process();
+    sessionA = signerRound1A.session;
+
+    const signerRound1B = new SignerRound1(sessionB, inputForRound1B);
+    round1outputB = signerRound1B.process();
+    sessionB = signerRound1B.session;
+  });
+
+  it('does round 2', () => {
+    const allBroadcasts = [
+      ...round1outputA.broadcasts,
+      ...round1outputB.broadcasts,
+    ];
+    const directMessagesToA = [
+      ...round1outputB.messages.filter((m) => m.to === 'a'),
+    ];
+    const directMessagesToB = [
+      ...round1outputA.messages.filter((m) => m.to === 'b'),
+    ];
+
+    const signerRound2A = new SignerRound2(sessionA, round1outputA.inputForRound2);
+    allBroadcasts.forEach((b) => signerRound2A.handleBroadcastMessage(b));
+    directMessagesToA.forEach((m) => signerRound2A.handleDirectMessage(m));
+    round2outputA = signerRound2A.process();
+    sessionA = signerRound2A.session;
+
+    const signerRound2B = new SignerRound2(sessionB, round1outputB.inputForRound2);
+    allBroadcasts.forEach((b) => signerRound2B.handleBroadcastMessage(b));
+    directMessagesToB.forEach((m) => signerRound2B.handleDirectMessage(m));
+    round2outputB = signerRound2B.process();
+    sessionB = signerRound2B.session;
+  });
+
+  it('does round 3', () => {
+    const allBroadcasts = [
+      ...round2outputA.broadcasts,
+      ...round2outputB.broadcasts,
+    ];
+    const directMessagesToA = [
+      ...round2outputB.messages.filter((m) => m.to === 'a'),
+    ];
+    const directMessagesToB = [
+      ...round2outputA.messages.filter((m) => m.to === 'b'),
+    ];
+
+    const signerRound3A = new SignerRound3(sessionA, round2outputA.inputForRound3);
+    allBroadcasts.forEach((b) => signerRound3A.handleBroadcastMessage(b));
+    directMessagesToA.forEach((m) => signerRound3A.handleDirectMessage(m));
+    round3outputA = signerRound3A.process();
+    sessionA = signerRound3A.session;
+
+    const signerRound3B = new SignerRound3(sessionB, round2outputB.inputForRound3);
+    allBroadcasts.forEach((b) => signerRound3B.handleBroadcastMessage(b));
+    directMessagesToB.forEach((m) => signerRound3B.handleDirectMessage(m));
+    round3outputB = signerRound3B.process();
+    sessionB = signerRound3B.session;
+  });
+
+  it('does round 4', () => {
+    const allBroadcasts = [
+      ...round3outputA.broadcasts,
+      ...round3outputB.broadcasts,
+    ];
+    const directMessagesToA = [
+      ...round3outputB.messages.filter((m) => m.to === 'a'),
+    ];
+    const directMessagesToB = [
+      ...round3outputA.messages.filter((m) => m.to === 'b'),
+    ];
+
+    const signerRound4A = new SignerRound4(sessionA, round3outputA.inputForRound4);
+    allBroadcasts.forEach((b) => signerRound4A.handleBroadcastMessage(b));
+    directMessagesToA.forEach((m) => signerRound4A.handleDirectMessage(m));
+    round4outputA = signerRound4A.process();
+    sessionA = signerRound4A.session;
+
+    const signerRound4B = new SignerRound4(sessionB, round3outputB.inputForRound4);
+    allBroadcasts.forEach((b) => signerRound4B.handleBroadcastMessage(b));
+    directMessagesToB.forEach((m) => signerRound4B.handleDirectMessage(m));
+    round4outputB = signerRound4B.process();
+    sessionB = signerRound4B.session;
+  });
+
+  it('does round 5', () => {
+    const allBroadcasts = [
+      ...round4outputA.broadcasts,
+      ...round4outputB.broadcasts,
+    ];
+
+    const signerRound5A = new SignerRound5(sessionA, round4outputA.inputForRound5);
+    allBroadcasts.forEach((b) => signerRound5A.handleBroadcastMessage(b));
+    round5outputA = signerRound5A.process();
+
+    const signerRound5B = new SignerRound5(sessionB, round4outputB.inputForRound5);
+    allBroadcasts.forEach((b) => signerRound5B.handleBroadcastMessage(b));
+    round5outputB = signerRound5B.process();
+
+
+    assert.deepEqual(round5outputA, round5outputB);
   });
 
   // check signature/recover address with a major ethereum library

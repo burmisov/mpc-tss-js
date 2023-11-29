@@ -38,22 +38,21 @@ export class SignSession {
     this.sessionId = randBetween(2n ** 256n);
 
     const lag = lagrange(signRequest.signerIds);
-    // console.log('lag full', lag);
     let publicKey = secp256k1.ProjectivePoint.ZERO;
 
     // TODO: see if can just reuse keyConfig.publicPartyData
-    const partiesPublic: SignPartyInputRound1['partiesPublic'] = Object.fromEntries(
-      Object.entries(keyConfig.publicPartyData).map(([partyId, partyData]) => {
-        const point = secp256k1.ProjectivePoint.fromAffine(partyData.ecdsa);
-        const scaledPoint = point.multiply(lag[partyId]);
-        publicKey = publicKey.add(scaledPoint);
-        return [partyId, {
-          ecdsa: scaledPoint.toAffine(),
-          paillier: partyData.paillier,
-          pedersen: partyData.pedersen,
-        }];
-      })
-    );
+    const partiesPublic: SignPartyInputRound1['partiesPublic'] = {};
+    signRequest.signerIds.forEach(partyId => {
+      const partyData = keyConfig.publicPartyData[partyId];
+      const point = secp256k1.ProjectivePoint.fromAffine(partyData.ecdsa);
+      const scaledPoint = point.multiply(lag[partyId]);
+      publicKey = publicKey.add(scaledPoint);
+      partiesPublic[partyId] = {
+        ecdsa: scaledPoint.toAffine(),
+        paillier: partyData.paillier,
+        pedersen: partyData.pedersen,
+      };
+    });
 
     // TODO: make consistent with original
     this.hasher = Hasher.create().update('CMP-BLAKE');
