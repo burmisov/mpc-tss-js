@@ -1,6 +1,8 @@
+import { secp256k1 } from '@noble/curves/secp256k1';
 import { AffinePoint, AffinePointSerialized } from './common.types.js';
 import { PaillierPublicKey, PaillierPublicKeySerialized, PaillierSecretKey, PaillierSecretKeySerialized, paillierPublicKeyFromSerialized, paillierSecretKeyFromSerialized } from './paillier.js';
 import { PedersenParameters, PedersenParametersSerialized, pedersenParametersFromSerialized } from './pedersen.js';
+import { lagrange } from './lagrange.js';
 
 export type PartyId = string;
 
@@ -90,3 +92,18 @@ export const otherPartyIds = (
 ): Array<PartyId> => {
   return partyIds.filter(partyId => partyId !== selfId);
 }
+
+export const getPublicPoint = (
+  publicPartyData: Record<string, PartyPublicKeyConfig>
+): AffinePoint => {
+  let sum = secp256k1.ProjectivePoint.ZERO;
+  const partyIds = Object.keys(publicPartyData).sort();
+  const lag = lagrange(partyIds);
+  for (const partyId of partyIds) {
+    const partyPoint = secp256k1.ProjectivePoint.fromAffine(
+      publicPartyData[partyId].ecdsa
+    ).multiply(lag[partyId]);
+    sum = sum.add(partyPoint);
+  }
+  return sum.toAffine();
+};

@@ -32,4 +32,8 @@ export default class Fn {
   static pow(x: bigint, e: bigint): bigint {
     return modPow(x, e, Fn.N);
   }
+
+  static isOverHalfOrder(x: bigint): boolean {
+    return x > Fn.N / 2n;
+  }
 }

@@ -1,11 +1,12 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { secp256k1 } from '@noble/curves/secp256k1';
+import * as ethers from 'ethers';
 
 import { AffinePointSerialized } from '../common.types.js';
 import {
   PartyPublicKeyConfigSerialized, PartySecretKeyConfig,
-  PartySecretKeyConfigSerialized, deserializePartySecretKeyConfig,
+  PartySecretKeyConfigSerialized, deserializePartySecretKeyConfig, getPublicPoint,
 } from "../keyConfig.js";
 import {
   PaillierPublicKeySerialized, PaillierSecretKeySerialized,
@@ -23,6 +24,9 @@ import { SignPartyOutputRound3, SignerRound3 } from './SignerRound3.js';
 import { SignPartyOutputRound4, SignerRound4 } from './SignerRound4.js';
 import { SignPartyOutputRound5, SignerRound5 } from './SignerRound5.js';
 import { SignSession } from './SignSession.js';
+import { ethAddress, sigEthereum } from '../eth.js';
+import { bytesToHex } from '@noble/hashes/utils';
+import { keccak_256 } from '@noble/hashes/sha3';
 
 const publicKeyConfigA: PartyPublicKeyConfigSerialized = {
   partyId: 'a',
@@ -141,8 +145,10 @@ const secretKeyConfigC: PartySecretKeyConfigSerialized = {
   },
 }
 
+const messageToSign = 'hello';
+
 const signRequestSerialized: SignRequestSerialized = {
-  messageHex: '68656c6c6f', // 'hello',
+  messageHex: bytesToHex(keccak_256(messageToSign)),
   signerIds: ['a', 'b', 'c'],
 }
 
@@ -418,11 +424,17 @@ describe('sign', () => {
     assert.deepEqual(round5outputB, round5outputC);
   });
 
-  // TODO: convert to ethereum signature and verify using external library
+  // check signature/recover address with a major ethereum library
+  it('signatures check', () => {
+    const pubPoint = getPublicPoint(partyConfigA.publicPartyData);
+    const address = ethAddress(pubPoint);
 
-  // it('signatures match', () => {
-  //   // console.log(round5outputA);
-  //   // console.log(round5outputB);
-  //   // console.log(round5outputC);
-  // });
+    const ethSig = sigEthereum(round5outputA.signature.R, round5outputA.signature.S);
+
+    const addressRec = ethers.recoverAddress(
+      signRequest.message, '0x' + bytesToHex(ethSig)
+    ).toLowerCase();
+
+    assert.strictEqual(address, addressRec);
+  });
 });

@@ -1,7 +1,7 @@
 import { secp256k1 } from "@noble/curves/secp256k1";
 import { AffinePoint, ProjectivePoint } from "./common.types.js";
 import { bitLength } from "bigint-crypto-utils";
-import { bytesToNumberBE } from "@noble/curves/abstract/utils";
+import { bytesToNumberBE, numberToBytesBE } from "@noble/curves/abstract/utils";
 import Fn from "./Fn.js";
 
 // Identity point? TODO: check if this is the right way to do it
@@ -45,4 +45,14 @@ export const verifySignature = (
   const R2 = mG.add(rX).multiply(sInv);
 
   return secp256k1.ProjectivePoint.fromAffine(sigR).equals(R2);
+};
+
+export const pointToEcdsaBytes = (point: AffinePoint): Uint8Array => {
+  const ppoint = secp256k1.ProjectivePoint.fromAffine(point);
+  const xBytes = numberToBytesBE(point.x, 32);
+  const yByte = ppoint.hasEvenY() ? 0x02 : 0x03;
+  const bytes = new Uint8Array(33);
+  bytes[0] = yByte;
+  bytes.set(xBytes, 1);
+  return bytes;
 };
