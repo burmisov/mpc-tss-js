@@ -79,7 +79,7 @@ like emulates) signatories communication throught the 5 rounds of creating a sig
 - [ ] Oblivious Transfer
 - [ ] Create a proper readme
 - [ ] Add a workflow to test and publish
-- [ ] Configure my system for signed commits
+- [x] Configure my system for signed commits
 - [ ] MILESTONE 3+: Review, add Schnorr and Ed25519 signatures to the scope, implement key refresh ceremony, etc.
 
 ### Docs
