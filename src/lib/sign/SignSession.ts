@@ -1,7 +1,7 @@
 import { secp256k1 } from '@noble/curves/secp256k1';
 
 import { PartyId, PartySecretKeyConfig } from "../keyConfig.js";
-import { lagrange } from '../lagrange.js';
+import { lagrange } from '../polynomial/lagrange.js';
 import Fn from '../Fn.js';
 import { SignPartyInputRound1 } from './SignerRound1.js';
 import { Hasher } from '../Hasher.js';

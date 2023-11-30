@@ -2,7 +2,7 @@ import { secp256k1 } from '@noble/curves/secp256k1';
 import { AffinePoint, AffinePointSerialized } from './common.types.js';
 import { PaillierPublicKey, PaillierPublicKeySerialized, PaillierSecretKey, PaillierSecretKeySerialized, paillierPublicKeyFromSerialized, paillierSecretKeyFromSerialized } from './paillier.js';
 import { PedersenParameters, PedersenParametersSerialized, pedersenParametersFromSerialized } from './pedersen.js';
-import { lagrange } from './lagrange.js';
+import { lagrange } from './polynomial/lagrange.js';
 
 export type PartyId = string;
 

@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from 'node:assert/strict';
 
-import Fn from "./Fn.js";
+import Fn from "../Fn.js";
 
 import { lagrange } from "./lagrange.js";
 

@@ -1,7 +1,7 @@
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils';
 
-import Fn from './Fn.js';
-import { PartyId } from "./keyConfig.js";
+import Fn from '../Fn.js';
+import { PartyId } from "../keyConfig.js";
 
 export const lagrange = (
   interpolationDomain: PartyId[],
