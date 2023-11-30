@@ -1,9 +1,10 @@
-import { bytesToNumberBE } from "@noble/curves/abstract/utils";
+import { bytesToNumberBE, equalBytes } from "@noble/curves/abstract/utils";
 import { blake3 } from "@noble/hashes/blake3";
 import { Input, hexToBytes } from "@noble/hashes/utils";
 import { ProjectivePoint, AffinePoint } from "./common.types.js";
 import { PaillierPublicKey } from "./paillier.js";
 import { PedersenParameters } from "./pedersen.js";
+import { randBytesSync } from "bigint-crypto-utils";
 
 type IngestableBasic = Uint8Array | string | bigint;
 type Ingestable = IngestableBasic | ProjectivePoint | AffinePoint |
@@ -115,5 +116,44 @@ export class Hasher {
       this.update(data[i]);
     }
     return this;
+  }
+
+  public commit(data: Array<Ingestable>): {
+    commitment: Uint8Array,
+    decommitment: Uint8Array,
+  } {
+    const decommitment = randBytesSync(32)
+    const h = this.clone();
+    h.updateMulti(data);
+    h.update(decommitment);
+    const commitment = h.digestBytes();
+    return {
+      commitment,
+      decommitment,
+    };
+  }
+
+  static validateCommitment(
+    commitment: Uint8Array,
+  ): void {
+    if (commitment.length !== 32) { throw new Error('Bad commitment length'); }
+    for (let i = 0; i < commitment.length; i += 1) {
+      if (commitment[i] !== 0) { return; }
+    }
+    throw new Error('commitment is 0');
+  }
+
+  public decommit(
+    commitment: Uint8Array,
+    decommitment: Uint8Array,
+    data: Array<Ingestable>,
+  ): boolean {
+    Hasher.validateCommitment(commitment);
+    Hasher.validateCommitment(decommitment);
+    const h = this.clone();
+    h.updateMulti(data);
+    h.update(decommitment);
+    const computedCommitment = h.digestBytes();
+    return equalBytes(commitment, computedCommitment);
   }
 }

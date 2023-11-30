@@ -1,4 +1,4 @@
-import { beforeEach, describe, it } from "node:test";
+import { beforeEach, describe, it, test } from "node:test";
 import assert from 'assert/strict';
 import { Hasher } from "./Hasher.js";
 import { AffinePoint } from "./common.types.js";
@@ -101,5 +101,19 @@ describe('Hasher', () => {
       .update(pedersen.t)
       .digestBigint();
     assert.equal(hash, originalHash);
+  });
+
+  test('commitment/decommitment', () => {
+    const data = [
+      'hello world',
+      1n,
+      new Uint8Array([1, 2, 3, 4, 5]),
+      secp256k1.ProjectivePoint.BASE,
+    ];
+    const { commitment, decommitment } = hasher.commit(data);
+    const verified = hasher.decommit(commitment, decommitment, data);
+    assert.equal(verified, true);
+    const nonVerified = hasher.decommit(commitment, decommitment, ['foo']);
+    assert.equal(nonVerified, false);
   });
 });
