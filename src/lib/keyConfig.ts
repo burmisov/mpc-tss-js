@@ -1,8 +1,16 @@
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { AffinePoint, AffinePointSerialized } from './common.types.js';
-import { PaillierPublicKey, PaillierPublicKeySerialized, PaillierSecretKey, PaillierSecretKeySerialized, paillierPublicKeyFromSerialized, paillierSecretKeyFromSerialized } from './paillier.js';
-import { PedersenParameters, PedersenParametersSerialized, pedersenParametersFromSerialized } from './pedersen.js';
+import {
+  PaillierPublicKey, PaillierPublicKeySerialized, PaillierSecretKey,
+  PaillierSecretKeySerialized, paillierPublicKeyFromSerialized,
+  paillierSecretKeyFromSerialized,
+} from './paillier.js';
+import {
+  PedersenParameters, PedersenParametersSerialized, pedersenParametersFromSerialized,
+} from './pedersen.js';
 import { lagrange } from './polynomial/lagrange.js';
+import { bytesToNumberBE } from '@noble/curves/abstract/utils';
+import { utf8ToBytes } from '@noble/hashes/utils';
 
 export type PartyId = string;
 
@@ -107,3 +115,9 @@ export const getPublicPoint = (
   }
   return sum.toAffine();
 };
+
+export const partyIdToScalar = (
+  partyId: PartyId,
+): bigint => {
+  return bytesToNumberBE(utf8ToBytes(partyId));
+}

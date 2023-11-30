@@ -5,10 +5,11 @@ import { ProjectivePoint, AffinePoint } from "./common.types.js";
 import { PaillierPublicKey } from "./paillier.js";
 import { PedersenParameters } from "./pedersen.js";
 import { randBytesSync } from "bigint-crypto-utils";
+import { Exponent } from "./polynomial/exponent.js";
 
 type IngestableBasic = Uint8Array | string | bigint;
 type Ingestable = IngestableBasic | ProjectivePoint | AffinePoint |
-  PaillierPublicKey | PedersenParameters;
+  PaillierPublicKey | PedersenParameters | Exponent;
 
 export class Hasher {
   private hash: ReturnType<typeof blake3.create>;
@@ -74,6 +75,12 @@ export class Hasher {
       typeof data === 'bigint'
     ) {
       buf.push(data);
+    } else if (data instanceof Exponent) {
+      for (let i = 0; i < data.coefficients.length; i += 1) {
+        const p = data.coefficients[i].toAffine();
+        buf.push(p.x);
+        buf.push(p.y);
+      }
     } else if (typeof (data as PaillierPublicKey).n === 'bigint' &&
       typeof (data as PaillierPublicKey).nSquared === 'bigint' &&
       typeof (data as PaillierPublicKey).nPlusOne === 'bigint' &&

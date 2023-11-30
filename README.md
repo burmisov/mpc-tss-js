@@ -63,7 +63,7 @@ like emulates) signatories communication throught the 5 rounds of creating a sig
 - [ ] ZK Proofs -- prm
 - [x] Polynomials
 - [x] Polynomial Exponent
-- [ ] Keygen round 1
+- [x] Keygen round 1
 - [ ] Keygen round 2
 - [ ] Keygen round 3
 - [ ] Keygen round 4
