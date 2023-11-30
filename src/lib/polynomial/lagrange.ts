@@ -1,7 +1,5 @@
-import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils';
-
 import Fn from '../Fn.js';
-import { PartyId } from "../keyConfig.js";
+import { PartyId, partyIdToScalar } from "../keyConfig.js";
 
 export const lagrange = (
   interpolationDomain: PartyId[],
@@ -30,8 +28,7 @@ const getScalarsAndNumerator = (
   const scalars: Record<PartyId, bigint> = {};
   let numerator = 1n;
   for (const id of interpolationDomain) {
-    const idBytes = utf8ToBytes(id);
-    const xi = BigInt('0x' + bytesToHex(idBytes));
+    const xi = partyIdToScalar(id);
     scalars[id] = xi;
     numerator = Fn.mul(numerator, xi);
   }

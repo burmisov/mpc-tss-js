@@ -2,7 +2,7 @@ import Fn from "../Fn.js";
 import { sampleScalar } from "../sample.js";
 
 export class Polynomial {
-  private coefficients: Array<bigint>;
+  public coefficients: Array<bigint>;
 
   constructor(degree: number, constant: bigint = 0n) {
     this.coefficients = [];
