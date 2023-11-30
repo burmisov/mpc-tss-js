@@ -13,9 +13,10 @@ https://eprint.iacr.org/2021/060
 Updated Nov 30, 2023
 
 Milestone 1 complete -- the library is able to perform a "2 out of 3" or
-"3 out of 3" parties ECDSA signature, the signature is validated both internally and
-with Ethereum tools. The 3 parties key configuration used is pre-created using the
-original [multi-party-sig](https://github.com/taurusgroup/multi-party-sig) library.
+"3 out of 3" parties ECDSA signature (and probably other party numbers, too),
+the signature is validated both internally and with Ethereum tools. The 3 parties
+key configuration used is pre-created using the original
+[multi-party-sig](https://github.com/taurusgroup/multi-party-sig) library.
 Milestone 2 is going to be the key generation ceremony implementation, but before that
 it needs some care with state/parameters validation and cleanup.
 
@@ -36,9 +37,59 @@ npm test
 The signature test uses a pre-created 3-party key configuration and handles (more
 like emulates) signatories communication throught the 5 rounds of creating a signature.
 
-## TODO
+## Current goals
+
+1. Make a full useable cycle with creating a multi-party key setup (key generation process)
+2. Everything else is secondary at this point; this includes docs, comments, links, performance optimization, proper packaging, even some mid-to-low grade security aspects, etc.
+
+## Known issues and limitations
+
+1. Doesn't really perform a full-cycle useful service as of current status; this is about to change
+2. Some operations that could be constant time are not currently constant time
+3. No proper per-round validation of completeness of input parameters
+4. Signing session and state passing between rounds is a bit messy
+5. There's no consistent serialization and deserialization routints for all the necessary objects
+6. Known factorization is not reused to speed some things up; this can be added later
+7. [ likely there's more ]
+
+## TODOs:
 
 ### Features
+
+- [ ] MILESTONE 2: Implement a key generation ceremony; generate valid party setups and create a valid signature
+- [ ] ZK Proofs -- sch
+- [ ] ZK Proofs -- fac
+- [ ] ZK Proofs -- mod
+- [ ] ZK Proofs -- prm
+- [ ] Polynimials
+- [ ] Keygen round 1
+- [ ] Keygen round 2
+- [ ] Keygen round 3
+- [ ] Keygen round 4
+- [ ] Keygen round 5
+- [ ] End-to-end test with keygen and signing with fresh keys
+
+### Other
+
+- [ ] Hashing with domains
+- [ ] BIP32 signing
+- [ ] Refactor and cleanup
+- [ ] Devise a predictable Error model
+- [ ] ElGamal
+- [ ] Oblivious Transfer
+- [ ] Create a proper readme
+- [ ] Add a workflow to test and publish
+- [ ] Configure my system for signed commits
+- [ ] MILESTONE 3+: Review, add Schnorr and Ed25519 signatures to the scope, implement key refresh ceremony, etc.
+
+### Docs
+
+- [ ] Explicitly list dependencies
+- [ ] Link to my instrumented multi-party-sig fork
+- [ ] Lay out motivation and prior art
+- [ ] Lay out the goals and the plan
+
+##### Done:
 
 - [x] MILESTONE 1: Create a valid signature via "online" ceremony given pre-created party setups
 - [x] Paillier encryption scheme internal library (minimal)
@@ -57,31 +108,9 @@ like emulates) signatories communication throught the 5 rounds of creating a sig
 - [x] Signing Round 5
 - [x] Covert to Ethereum signature and verify with external tool
 - [x] Fix session hashing
-- [ ] Hashing with domains
-- [ ] BIP32 signing
-- [ ] Refactor and cleanup
-- [ ] ZK Proofs -- others
-- [ ] Blake3-based hasher class?
-- [ ] Devise a predictable Error model
-- [ ] ECDSA with secp256k1 utils (use/wrap @noble/curves ?)
-- [ ] ElGamal
-- [ ] Oblivious Transfer
-- [ ] Signing round data and implementations
-- [ ] MILESTONE 2: Implement a key generation ceremony; generate valid party setups and create a valid signature
-- [ ] MILESTONE 3+: Review, add Schnorr and Ed25519 signatures to the scope, implement key refresh ceremony, etc.
-
-### General
-
-- [ ] Create a proper readme
-- [ ] Add a workflow to test and publish
-- [ ] Configure my system for signed commits
-
-### Doc
-
-- [ ] Explicitly list dependencies
-- [ ] Link to my instrumented multi-party-sig fork
-- [ ] Lay out motication and prior art
-- [ ] Lay out the goals and the plan
+- [x] Blake3-based hasher class
+- [x] Signing round data and implementations
+- [x] ECDSA with secp256k1 utils (use/wrap @noble/curves -- did use it)
 
 ## Intellectual Property
 

@@ -1,13 +1,13 @@
 {
   "name": "mpc-tss-js",
   "type": "module",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "0.1.0",
+  "description": "Multi-Party Computation Threshold Signature Scheme Implementation in Javascript",
+  "repository": "github:burmisov/mpc-tss-js",
   "scripts": {
     "test": "node --import tsx --test src/**/*.test.ts src/**/**/*.test.ts"
   },
-  "author": "",
+  "author": "Sergey Burmisov <sergey@burmisov.com> (https://burmisov.com)",
   "license": "Apache-2.0",
   "devDependencies": {
     "@tsconfig/node20": "^20.1.2",
