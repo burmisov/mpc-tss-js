@@ -64,7 +64,7 @@ like emulates) signatories communication throught the 5 rounds of creating a sig
 - [x] Polynomials
 - [x] Polynomial Exponent
 - [x] Keygen round 1
-- [ ] Keygen round 2
+- [x] Keygen round 2
 - [ ] Keygen round 3
 - [ ] Keygen round 4
 - [ ] Keygen round 5
