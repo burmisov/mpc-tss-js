@@ -11,7 +11,7 @@ const LPRIME = 5 * SEC_PARAM; // = 1280
 const EPSILON = 2 * SEC_PARAM; // = 512
 export const L_PLUS_EPSILON = L + EPSILON; // = 768
 export const LPRIME_PLUS_EPSILON = LPRIME + EPSILON; // = 1792
-const BITS_INT_MOD_N = 8 * SEC_PARAM; // = 2048
+export const BITS_INT_MOD_N = 8 * SEC_PARAM; // = 2048
 
 export const sampleUnitModN = (modulus: bigint): bigint => {
   const maxIterations = 256;
@@ -50,6 +50,14 @@ export const sampleIntervalL = (): bigint => {
 export const sampleIntervalLprime = (): bigint => {
   return sampleNeg(LPRIME);
 }
+
+export const sampleIntervalLEpsRootN = (): bigint => {
+  return sampleNeg(L_PLUS_EPSILON + BITS_INT_MOD_N / 2);
+};
+
+export const sampleIntervalLN2 = (): bigint => {
+  return sampleNeg(L + BITS_INT_MOD_N * 2);
+};
 
 export const sampleNeg = (bits: number): bigint => {
   const randomBits = randBitsSync(bits + 1);
