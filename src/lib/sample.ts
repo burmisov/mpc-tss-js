@@ -1,8 +1,8 @@
 import { bitLength, gcd, randBytesSync, randBitsSync } from 'bigint-crypto-utils';
-
-import Fn from './Fn.js';
 import { secp256k1 } from "@noble/curves/secp256k1";
 import { randBetween } from "bigint-crypto-utils";
+
+import Fn from './Fn.js';
 import { AffinePoint } from "./common.types.js";
 
 const SEC_PARAM = 256;
@@ -25,6 +25,12 @@ export const sampleUnitModN = (modulus: bigint): bigint => {
     }
   }
   throw new Error('MAX_INT_ITERATIONS_EXCEEDED');
+};
+
+export const sampleModN = (n: bigint): bigint => {
+  // TODO: recheck logic
+  const out = randBetween(n - 1n);
+  return out;
 };
 
 export const sampleIntervalLeps = (): bigint => {

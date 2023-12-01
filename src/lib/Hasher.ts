@@ -41,6 +41,12 @@ export class Hasher {
     return bytesToNumberBE(this.hash.digest());
   }
 
+  public digestBytesInto(buf: Uint8Array): void {
+    this.checkUsed();
+    this.used = true;
+    return this.hash.digestInto(buf);
+  }
+
   public clone(): Hasher {
     return new Hasher(this.hash.clone());
   }
