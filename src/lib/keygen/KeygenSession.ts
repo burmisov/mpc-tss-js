@@ -49,6 +49,11 @@ export class KeygenSession {
     this.inputForRound1 = {
       vssSecret,
       precomputedPaillierPrimes: this.precomputedPaillierPrimes,
+
+      // TODO: these are for refresh? not implemented yet
+      previousSecretECDSA: null,
+      previousPublicSharesECDSA: null,
+      previousChainKey: null,
     };
   }
 

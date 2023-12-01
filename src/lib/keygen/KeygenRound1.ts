@@ -17,6 +17,11 @@ export type KeygenInputForRound1 = {
     p: bigint;
     q: bigint;
   };
+
+  // TODO: these are for refresh? not implemented yet
+  previousSecretECDSA: null,
+  previousPublicSharesECDSA: null,
+  previousChainKey: null,
 };
 
 export type KeygenRound1Output = {
@@ -64,7 +69,6 @@ export class KeygenRound1 {
     const selfRID = randBetween(2n ** 256n);
     const chainKey = randBetween(2n ** 256n);
 
-    console.log('commiting for', this.session.selfId);
     const {
       commitment: selfCommitment, decommitment,
     } = this.session.cloneHashForId(this.session.selfId).commit([
