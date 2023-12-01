@@ -13,7 +13,7 @@ import { ZkPrmProof, ZkPrmPublic, zkPrmVerifyProof } from "../zk/prm.js";
 import { KeygenInputForRound3 } from "./KeygenRound3.js";
 import { KeygenSession } from "./KeygenSession.js";
 import { AffinePoint } from "../common.types.js";
-import { zkSchProve } from "../zk/zksch.js";
+import { ZkSchCommitment, zkSchProve, zkSchVerifyResponse } from "../zk/zksch.js";
 import { KeygenBroadcastForRound5, KeygenInputForRound5 } from "./KeygenRound5.js";
 
 export type KeygenBroadcastForRound4 = {
@@ -37,6 +37,7 @@ export type KeygenInputForRound4 = {
   PaillierPublic: Record<PartyId, PaillierPublicKey>,
   vssPolynomials: Record<PartyId, Exponent>,
   ElGamalPublic: Record<PartyId, AffinePoint>,
+  SchnorrCommitments: Record<PartyId, ZkSchCommitment>,
 };
 
 export type KeygenRound4Output = {
@@ -118,13 +119,14 @@ export class KeygenRound4 {
   }
 
   public process(): KeygenRound4Output {
+    this.ShareReceived[this.session.selfId] = this.input.
+      inputForRound3.inputForRound2.selfShare;
     let UpdatedSecretECDSA = 0n;
     if (this.input.inputForRound3.inputForRound2.inputRound1.previousSecretECDSA) {
       // TODO: on refresh
       throw new Error('not implemented');
     }
     for (const j of this.session.partyIds) {
-      if (j === this.session.selfId) { continue; } // TODO: check this
       UpdatedSecretECDSA = Fn.add(UpdatedSecretECDSA, this.ShareReceived[j]);
     }
 

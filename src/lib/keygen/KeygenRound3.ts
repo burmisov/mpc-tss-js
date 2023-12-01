@@ -183,6 +183,7 @@ export class KeygenRound3 {
         PaillierPublic: this.PaillierPublic,
         vssPolynomials: this.vssPolynomials,
         ElGamalPublic: this.ElGamalPublic,
+        SchnorrCommitments: this.SchnorrCommitments,
       }
     };
   }

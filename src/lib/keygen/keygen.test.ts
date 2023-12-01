@@ -1,11 +1,16 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 
+import * as ethers from 'ethers';
+
 import { KeygenSession } from './KeygenSession.js';
 import { KeygenRound1, KeygenRound1Output } from './KeygenRound1.js';
 import { KeygenRound2, KeygenRound2Output } from './KeygenRound2.js';
 import { KeygenRound3, KeygenRound3Output } from './KeygenRound3.js';
 import { KeygenRound4, KeygenRound4Output } from './KeygenRound4.js';
+import { KeygenRound5, KeygenRound5Output } from './KeygenRound5.js';
+import { getPublicPoint } from '../keyConfig.js';
+import { ethAddress } from '../eth.js';
 
 const precomputedPaillierPrimesA = {
   p: 140656066935617068498146945231934875455216373658357415502745428687235261656648638287551719750772170167072660618746434922467026175316328679021082239834872641463481202598538804109033672325604594242999482643715131298123781048438272500363100287151576822437239577277536933950267625817888142008490020035657029276407n,
@@ -29,18 +34,21 @@ describe('keygen 2/3', async () => {
   let outputRound2A: KeygenRound2Output;
   let outputRound3A: KeygenRound3Output;
   let outputRound4A: KeygenRound4Output;
+  let outputRound5A: KeygenRound5Output;
 
   let sessionB: KeygenSession;
   let outputRound1B: KeygenRound1Output;
   let outputRound2B: KeygenRound2Output;
   let outputRound3B: KeygenRound3Output;
   let outputRound4B: KeygenRound4Output;
+  let outputRound5B: KeygenRound5Output;
 
   let sessionC: KeygenSession;
   let outputRound1C: KeygenRound1Output;
   let outputRound2C: KeygenRound2Output;
   let outputRound3C: KeygenRound3Output;
   let outputRound4C: KeygenRound4Output;
+  let outputRound5C: KeygenRound5Output;
 
   test('initiate session', async () => {
     // Use precomputed primes to speed up tests
@@ -135,6 +143,43 @@ describe('keygen 2/3', async () => {
     outputRound4C = keygenRound4C.process();
   });
 
-  // TODO: round 5
-  // TODO: final checks
+  test('round 5', async () => {
+    const allBroadcasts = [
+      ...outputRound4A.broadcasts,
+      ...outputRound4B.broadcasts,
+      ...outputRound4C.broadcasts,
+    ];
+    assert.equal(allBroadcasts.length, 3);
+
+    const keygenRound5A = new KeygenRound5(sessionA, outputRound4A.inputForRound5);
+    allBroadcasts.forEach((b) => keygenRound5A.handleBroadcastMessage(b));
+    outputRound5A = keygenRound5A.process();
+
+    const keygenRound5B = new KeygenRound5(sessionB, outputRound4B.inputForRound5);
+    allBroadcasts.forEach((b) => keygenRound5B.handleBroadcastMessage(b));
+    outputRound5B = keygenRound5B.process();
+
+    const keygenRound5C = new KeygenRound5(sessionC, outputRound4C.inputForRound5);
+    allBroadcasts.forEach((b) => keygenRound5C.handleBroadcastMessage(b));
+    outputRound5C = keygenRound5C.process();
+
+    assert.deepEqual(
+      outputRound5A.UpdatedConfig.publicPartyData,
+      outputRound5B.UpdatedConfig.publicPartyData,
+    );
+    assert.deepEqual(
+      outputRound5A.UpdatedConfig.publicPartyData,
+      outputRound5C.UpdatedConfig.publicPartyData
+    );
+  });
+
+  test('public key eth address valid', async () => {
+    const partyConfigA = outputRound5A.UpdatedConfig;
+    const pubPoint = getPublicPoint(partyConfigA.publicPartyData);
+    const address = ethAddress(pubPoint);
+
+    // As address is different each time, we can only check that it is valid
+    // Which is sort of a no-test frankly
+    assert(ethers.isAddress(address));
+  });
 });

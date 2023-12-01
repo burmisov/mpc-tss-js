@@ -132,7 +132,7 @@ const zkSchIsCommitmentValid = (c: ZkSchCommitment): boolean => {
   return true;
 }
 
-const zkSchIsResponseValid = (z: ZkSchResponse): boolean => {
+export const zkSchIsResponseValid = (z: ZkSchResponse): boolean => {
   if (!z || z.Z === 0n) {
     return false;
   }
