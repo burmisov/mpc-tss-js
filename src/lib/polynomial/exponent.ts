@@ -62,5 +62,31 @@ export class Exponent {
     return this.coefficients.length - 1;
   }
 
+  public add(other: Exponent): void {
+    if (this.coefficients.length !== other.coefficients.length) {
+      throw new Error("q is not the same length as p");
+    }
+
+    if (this.isConstant !== other.isConstant) {
+      throw new Error("p and q differ in 'IsConstant'");
+    }
+
+    for (let i = 0; i < this.coefficients.length; i += 1) {
+      this.coefficients[i] = this.coefficients[i].add(other.coefficients[i]);
+    }
+  }
+
+  static sum(polys: Array<Exponent>): Exponent {
+    const summed = polys[0].copy();
+    for (let i = 1; i < polys.length; i++) {
+      summed.add(polys[i]);
+    }
+    return summed;
+  }
+
+  public copy(): Exponent {
+    return new Exponent(this.isConstant, this.coefficients.slice());
+  }
+
   // TODO: more methods
 }

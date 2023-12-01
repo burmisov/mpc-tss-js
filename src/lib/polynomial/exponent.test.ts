@@ -6,6 +6,7 @@ import { secp256k1 } from "@noble/curves/secp256k1";
 import { Polynomial } from "./polynomial.js";
 import { Exponent } from "./exponent.js";
 import { sampleScalar } from "../sample.js";
+import Fn from "../Fn.js";
 
 describe("Exponent", () => {
   test('evaluate', () => {
@@ -33,5 +34,35 @@ describe("Exponent", () => {
     }
   });
 
-  // TODO: more tests
+  test('sum', () => {
+    const N = 20;
+    const Deg = 10;
+
+    const randomIndex = sampleScalar();
+
+    let evaluationScalar = 0n;
+    let evaluationPartial = secp256k1.ProjectivePoint.ZERO;
+    const polys: Polynomial[] = [];
+    const polysExp: Exponent[] = [];
+    for (let i = 0; i < N; i++) {
+      const sec = sampleScalar();
+      polys[i] = Polynomial.new(Deg, sec);
+      polysExp[i] = Exponent.new(polys[i]);
+
+      evaluationScalar = Fn.add(evaluationScalar, polys[i].evaluate(randomIndex));
+      evaluationPartial = evaluationPartial.add(
+        secp256k1.ProjectivePoint.fromAffine(polysExp[i].evaluate(randomIndex)),
+      );
+    }
+
+    const summedExp = Exponent.sum(polysExp);
+    const evaluationSum = summedExp.evaluate(randomIndex);
+
+    const evaluationFromScalar =
+      secp256k1.ProjectivePoint.BASE.multiply(evaluationScalar);
+
+    const evaluationSumProj = secp256k1.ProjectivePoint.fromAffine(evaluationSum);
+    assert(evaluationSumProj.equals(evaluationFromScalar));
+    assert(evaluationSumProj.equals(evaluationPartial));
+  });
 });
