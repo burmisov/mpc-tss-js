@@ -3,10 +3,12 @@ import { AffinePoint, AffinePointSerialized } from './common.types.js';
 import {
   PaillierPublicKey, PaillierPublicKeySerialized, PaillierSecretKey,
   PaillierSecretKeySerialized, paillierPublicKeyFromSerialized,
+  paillierPublicKeyToSerialized,
   paillierSecretKeyFromSerialized,
+  paillierSecretKeyToSerialized,
 } from './paillier.js';
 import {
-  PedersenParameters, PedersenParametersSerialized, pedersenParametersFromSerialized,
+  PedersenParameters, PedersenParametersSerialized, pedersenParametersFromSerialized, pedersenParametersToSerialized,
 } from './pedersen.js';
 import { lagrange } from './polynomial/lagrange.js';
 import { bytesToNumberBE } from '@noble/curves/abstract/utils';
@@ -45,6 +47,24 @@ const deserializePartyPublicKeyConfig = (
     },
     paillier: paillierPublicKeyFromSerialized(serialized.paillier),
     pedersen: pedersenParametersFromSerialized(serialized.pedersen),
+  };
+}
+
+const serializePartyPublicKeyConfig = (
+  config: PartyPublicKeyConfig
+): PartyPublicKeyConfigSerialized => {
+  return {
+    partyId: config.partyId,
+    ecdsa: {
+      xHex: config.ecdsa.x.toString(16),
+      yHex: config.ecdsa.y.toString(16),
+    },
+    elgamal: {
+      xHex: config.elgamal.x.toString(16),
+      yHex: config.elgamal.y.toString(16),
+    },
+    paillier: paillierPublicKeyToSerialized(config.paillier),
+    pedersen: pedersenParametersToSerialized(config.pedersen),
   };
 }
 
@@ -91,6 +111,29 @@ export const deserializePartySecretKeyConfig = (
     paillier: paillierSecretKeyFromSerialized(serialized.paillier),
     rid: BigInt('0x' + serialized.ridHex),
     chainKey: BigInt('0x' + serialized.chainKeyHex),
+    publicPartyData,
+  };
+}
+
+export const serializePartySecretKeyConfig = (
+  config: PartySecretKeyConfig
+): PartySecretKeyConfigSerialized => {
+  const publicPartyData = Object.fromEntries(
+    Object.entries(config.publicPartyData)
+      .map(([partyId, partyPublicKeyConfig]) => (
+        [partyId, serializePartyPublicKeyConfig(partyPublicKeyConfig)]
+      ))
+  );
+
+  return {
+    curve: config.curve,
+    partyId: config.partyId,
+    threshold: config.threshold,
+    ecdsaHex: config.ecdsa.toString(16),
+    elgamalHex: config.elgamal.toString(16),
+    paillier: paillierSecretKeyToSerialized(config.paillier),
+    ridHex: config.rid.toString(16),
+    chainKeyHex: config.chainKey.toString(16),
     publicPartyData,
   };
 }

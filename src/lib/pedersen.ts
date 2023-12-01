@@ -21,6 +21,16 @@ export const pedersenParametersFromSerialized = (
   return { n, s, t };
 }
 
+export const pedersenParametersToSerialized = (
+  parameters: PedersenParameters
+): PedersenParametersSerialized => {
+  return {
+    nHex: parameters.n.toString(16),
+    sHex: parameters.s.toString(16),
+    tHex: parameters.t.toString(16),
+  };
+}
+
 export const pedersenValidateParameters = (
   parameters: PedersenParameters
 ) => {

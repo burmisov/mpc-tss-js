@@ -9,7 +9,7 @@ import { KeygenRound2, KeygenRound2Output } from './KeygenRound2.js';
 import { KeygenRound3, KeygenRound3Output } from './KeygenRound3.js';
 import { KeygenRound4, KeygenRound4Output } from './KeygenRound4.js';
 import { KeygenRound5, KeygenRound5Output } from './KeygenRound5.js';
-import { getPublicPoint } from '../keyConfig.js';
+import { getPublicPoint, serializePartySecretKeyConfig } from '../keyConfig.js';
 import { ethAddress } from '../eth.js';
 
 const precomputedPaillierPrimesA = {
@@ -181,5 +181,9 @@ describe('keygen 2/3', async () => {
     // As address is different each time, we can only check that it is valid
     // Which is sort of a no-test frankly
     assert(ethers.isAddress(address));
+
+    // console.log('party a', JSON.stringify(serializePartySecretKeyConfig(outputRound5A.UpdatedConfig), null, 2));
+    // console.log('party c', JSON.stringify(serializePartySecretKeyConfig(outputRound5B.UpdatedConfig), null, 2));
+    // console.log('party b', JSON.stringify(serializePartySecretKeyConfig(outputRound5C.UpdatedConfig), null, 2));
   });
 });

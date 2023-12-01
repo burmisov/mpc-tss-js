@@ -41,6 +41,15 @@ export const paillierSecretKeyFromSerialized = (
   return paillierSecretKeyFromPrimes(p, q);
 }
 
+export const paillierSecretKeyToSerialized = (
+  secretKey: PaillierSecretKey
+): PaillierSecretKeySerialized => {
+  return {
+    pHex: secretKey.p.toString(16),
+    qHex: secretKey.q.toString(16),
+  };
+}
+
 export const paillierPublicKeyFromN = (n: bigint): PaillierPublicKey => {
   const nSquared = n * n;
   const nPlusOne = n + 1n;
@@ -52,6 +61,14 @@ export const paillierPublicKeyFromSerialized = (
 ): PaillierPublicKey => {
   const n = BigInt('0x' + publicKeySerialized.nHex);
   return paillierPublicKeyFromN(n);
+}
+
+export const paillierPublicKeyToSerialized = (
+  publicKey: PaillierPublicKey
+): PaillierPublicKeySerialized => {
+  return {
+    nHex: publicKey.n.toString(16),
+  };
 }
 
 export const paillierSecretKeyFromPrimes = (p: bigint, q: bigint): PaillierSecretKey => {
