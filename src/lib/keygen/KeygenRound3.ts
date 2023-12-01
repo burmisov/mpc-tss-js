@@ -32,7 +32,7 @@ export type KeygenInputForRound3 = {
   commitments: Record<PartyId, Uint8Array>,
 };
 
-export type KeygenOutputRound3 = {
+export type KeygenRound3Output = {
   broadcasts: Array<KeygenBroadcastForRound4>,
   directMessages: Array<KeygenDirectMessageForRound4>,
   inputForRound4: KeygenInputForRound4,
@@ -97,7 +97,7 @@ export class KeygenRound3 {
     this.ElGamalPublic[from] = bmsg.elGamalPublic;
   }
 
-  public process(): KeygenOutputRound3 {
+  public process(): KeygenRound3Output {
     let chainKey: bigint | null = this.inputForRound3.
       inputForRound2.inputRound1.previousChainKey;
     if (chainKey === null) {
@@ -112,7 +112,9 @@ export class KeygenRound3 {
       rid = rid ^ this.RIDs[j]; // XOR
     }
 
-    this.session.hasher.updateMulti([rid, this.session.selfId]);
+    const hashWithRidAndPartyId = this.session.hasher.clone().updateMulti(
+      [rid, this.session.selfId]
+    );
 
     const modPriv: ZkModPrivate = {
       P: this.inputForRound3.inputForRound2.paillierSecret.p,
@@ -122,7 +124,7 @@ export class KeygenRound3 {
     const modPub: ZkModPublic = {
       N: this.PaillierPublic[this.session.selfId].n,
     };
-    const modProof = zkModCreateProof(modPriv, modPub, this.session.hasher.clone());
+    const modProof = zkModCreateProof(modPriv, modPub, hashWithRidAndPartyId.clone());
 
     const prmPriv: ZkPrmPrivate = {
       Lambda: this.inputForRound3.inputForRound2.pedersenSecret,
@@ -133,7 +135,7 @@ export class KeygenRound3 {
     const prmPub: ZkPrmPublic = {
       Aux: this.Pedersen[this.session.selfId],
     };
-    const prmProof = zkPrmCreateProof(prmPriv, prmPub, this.session.hasher.clone());
+    const prmProof = zkPrmCreateProof(prmPriv, prmPub, hashWithRidAndPartyId.clone());
 
     const broadcasts: Array<KeygenBroadcastForRound4> = [{
       from: this.session.selfId,
@@ -154,7 +156,7 @@ export class KeygenRound3 {
         N: this.PaillierPublic[this.session.selfId].n,
         Aux: this.Pedersen[j],
       };
-      const facProof = zkFacCreateProof(facPriv, facPub, this.session.hasher.clone());
+      const facProof = zkFacCreateProof(facPriv, facPub, hashWithRidAndPartyId.clone());
 
       const { vssSecret } = this.inputForRound3.inputForRound2.inputRound1;
       const share = vssSecret.evaluate(partyIdToScalar(j));
@@ -177,6 +179,10 @@ export class KeygenRound3 {
         inputForRound3: this.inputForRound3,
         RID: rid,
         ChainKey: chainKey,
+        PedersenPublic: this.Pedersen,
+        PaillierPublic: this.PaillierPublic,
+        vssPolynomials: this.vssPolynomials,
+        ElGamalPublic: this.ElGamalPublic,
       }
     };
   }

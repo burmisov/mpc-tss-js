@@ -66,9 +66,10 @@ like emulates) signatories communication throught the 5 rounds of creating a sig
 - [x] Keygen round 1
 - [x] Keygen round 2
 - [x] Keygen round 3
-- [ ] Keygen round 4
+- [x] Keygen round 4
 - [ ] Keygen round 5
 - [ ] End-to-end test with keygen and signing with fresh keys
+- [ ] check zk/mod
 
 ### Other
 

@@ -4,7 +4,8 @@ import assert from 'node:assert/strict';
 import { KeygenSession } from './KeygenSession.js';
 import { KeygenRound1, KeygenRound1Output } from './KeygenRound1.js';
 import { KeygenRound2, KeygenRound2Output } from './KeygenRound2.js';
-import { KeygenRound3 } from './KeygenRound3.js';
+import { KeygenRound3, KeygenRound3Output } from './KeygenRound3.js';
+import { KeygenRound4, KeygenRound4Output } from './KeygenRound4.js';
 
 const precomputedPaillierPrimesA = {
   p: 140656066935617068498146945231934875455216373658357415502745428687235261656648638287551719750772170167072660618746434922467026175316328679021082239834872641463481202598538804109033672325604594242999482643715131298123781048438272500363100287151576822437239577277536933950267625817888142008490020035657029276407n,
@@ -26,17 +27,20 @@ describe('keygen 2/3', async () => {
   let sessionA: KeygenSession;
   let outputRound1A: KeygenRound1Output;
   let outputRound2A: KeygenRound2Output;
-  let outputRound3A;
+  let outputRound3A: KeygenRound3Output;
+  let outputRound4A: KeygenRound4Output;
 
   let sessionB: KeygenSession;
   let outputRound1B: KeygenRound1Output;
   let outputRound2B: KeygenRound2Output;
-  let outputRound3B;
+  let outputRound3B: KeygenRound3Output;
+  let outputRound4B: KeygenRound4Output;
 
   let sessionC: KeygenSession;
   let outputRound1C: KeygenRound1Output;
   let outputRound2C: KeygenRound2Output;
-  let outputRound3C;
+  let outputRound3C: KeygenRound3Output;
+  let outputRound4C: KeygenRound4Output;
 
   test('initiate session', async () => {
     // Use precomputed primes to speed up tests
@@ -98,7 +102,39 @@ describe('keygen 2/3', async () => {
     outputRound3C = keygenRound3C.process();
   });
 
-  // TODO: round 4
+  test('round 4', async () => {
+    const allBroadcasts = [
+      ...outputRound3A.broadcasts,
+      ...outputRound3B.broadcasts,
+      ...outputRound3C.broadcasts,
+    ];
+    assert.equal(allBroadcasts.length, 3);
+    const allMessages = [
+      ...outputRound3A.directMessages,
+      ...outputRound3B.directMessages,
+      ...outputRound3C.directMessages,
+    ];
+    assert.equal(allMessages.length, 6);
+
+    const keygenRound4A = new KeygenRound4(sessionA, outputRound3A.inputForRound4);
+    allBroadcasts.forEach((b) => keygenRound4A.handleBroadcastMessage(b));
+    const messagesForA = allMessages.filter((m) => m.to === 'a');
+    messagesForA.forEach((m) => keygenRound4A.handleDirectMessage(m));
+    outputRound4A = keygenRound4A.process();
+
+    const keygenRound4B = new KeygenRound4(sessionB, outputRound3B.inputForRound4);
+    allBroadcasts.forEach((b) => keygenRound4B.handleBroadcastMessage(b));
+    const messagesForB = allMessages.filter((m) => m.to === 'b');
+    messagesForB.forEach((m) => keygenRound4B.handleDirectMessage(m));
+    outputRound4B = keygenRound4B.process();
+
+    const keygenRound4C = new KeygenRound4(sessionC, outputRound3C.inputForRound4);
+    allBroadcasts.forEach((b) => keygenRound4C.handleBroadcastMessage(b));
+    const messagesForC = allMessages.filter((m) => m.to === 'c');
+    messagesForC.forEach((m) => keygenRound4C.handleDirectMessage(m));
+    outputRound4C = keygenRound4C.process();
+  });
+
   // TODO: round 5
   // TODO: final checks
 });
