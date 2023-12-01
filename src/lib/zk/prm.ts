@@ -3,9 +3,7 @@ import { modAdd, modMultiply, modPow } from "bigint-crypto-utils";
 import { Hasher } from "../Hasher.js";
 import { isValidModN } from "../arith.js";
 import { PedersenParameters, pedersenValidateParameters } from "../pedersen.js";
-import { sampleModN } from "../sample.js";
-
-const STAT_PARAM = 80;
+import { STAT_PARAM, sampleModN } from "../sample.js";
 
 export type ZkPrmPublic = {
   Aux: PedersenParameters;

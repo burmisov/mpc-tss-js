@@ -59,7 +59,7 @@ like emulates) signatories communication throught the 5 rounds of creating a sig
 - [ ] MILESTONE 2: Implement a key generation ceremony; generate valid party setups and create a valid signature
 - [x] ZK Proofs -- sch
 - [x] ZK Proofs -- fac
-- [ ] ZK Proofs -- mod
+- [x] ZK Proofs -- mod
 - [x] ZK Proofs -- prm
 - [x] Polynomials
 - [x] Polynomial Exponent
