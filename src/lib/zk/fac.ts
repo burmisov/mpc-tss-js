@@ -90,6 +90,9 @@ export const zkFacVerifyProof = (
 
   const e = challenge(hasher, pub, proof.comm);
 
+  const N0 = pub.N;
+  const Nhat = pub.Aux.n;
+
   if (!pedersenVerify(
     pub.Aux, proof.Z1, proof.W1, e, proof.comm.A, proof.comm.P,
   )) { return false; }
@@ -100,25 +103,24 @@ export const zkFacVerifyProof = (
 
   const R = modMultiply(
     [
-      modPow(pub.Aux.s, pub.N, pub.N),
-      modPow(pub.Aux.t, proof.sigma, pub.N),
+      modPow(pub.Aux.s, N0, Nhat),
+      modPow(pub.Aux.t, proof.sigma, Nhat),
     ],
-    pub.N,
+    Nhat,
   );
-
   const lhs = modMultiply(
     [
-      modPow(proof.comm.Q, proof.Z1, pub.N),
-      modPow(pub.Aux.t, proof.V, pub.N),
+      modPow(proof.comm.Q, proof.Z1, Nhat),
+      modPow(pub.Aux.t, proof.V, Nhat),
     ],
-    pub.N,
+    Nhat,
   );
   const rhs = modMultiply(
     [
-      modPow(R, e, pub.N),
+      modPow(R, e, Nhat),
       proof.comm.T,
     ],
-    pub.N,
+    Nhat,
   );
   if (lhs !== rhs) { return false; }
 
