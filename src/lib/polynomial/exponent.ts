@@ -55,5 +55,12 @@ export class Exponent {
     return result.toAffine();
   }
 
+  public degree(): number {
+    if (this.isConstant) {
+      return this.coefficients.length;
+    }
+    return this.coefficients.length - 1;
+  }
+
   // TODO: more methods
 }

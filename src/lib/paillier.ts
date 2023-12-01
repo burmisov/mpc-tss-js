@@ -41,13 +41,17 @@ export const paillierSecretKeyFromSerialized = (
   return paillierSecretKeyFromPrimes(p, q);
 }
 
+export const paillierPublicKeyFromN = (n: bigint): PaillierPublicKey => {
+  const nSquared = n * n;
+  const nPlusOne = n + 1n;
+  return { n, nSquared, nPlusOne };
+};
+
 export const paillierPublicKeyFromSerialized = (
   publicKeySerialized: PaillierPublicKeySerialized
 ): PaillierPublicKey => {
   const n = BigInt('0x' + publicKeySerialized.nHex);
-  const nSquared = n * n;
-  const nPlusOne = n + 1n;
-  return { n, nSquared, nPlusOne };
+  return paillierPublicKeyFromN(n);
 }
 
 export const paillierSecretKeyFromPrimes = (p: bigint, q: bigint): PaillierSecretKey => {
@@ -186,6 +190,7 @@ const samplePedersen = (phi: bigint, n: bigint): {
 
 const SEC_PARAM = 256;
 const BITS_BLUM_PRIME = 4 * SEC_PARAM;
+const BITS_PAILLIER = 2 * BITS_BLUM_PRIME;
 const SIEVE_SIZE = 2 ** 18;
 const PRIME_BOUND = 2 ** 20;
 const BLUM_PRIMALITY_ITERATIONS = 20;
@@ -301,3 +306,16 @@ export const validatePaillierPrime = async (p: bigint): Promise<void> => {
     throw new Error(`INVALID_P_MINUS_1_DIV_2: ${pMinus1div2} is not prime`);
   }
 }
+
+export const paillierValidateN = (n: bigint) => {
+  if (!n) { throw new Error('N_IS_NULL'); }
+
+  const bits = bitLength(n);
+  if (bits !== BITS_PAILLIER) {
+    throw new Error(`INVALID_N_BITS: ${bits} !== ${BITS_PAILLIER}`);
+  }
+
+  if (n % 2n === 0n) {
+    throw new Error(`INVALID_N_EVEN: ${n} is even`);
+  }
+};

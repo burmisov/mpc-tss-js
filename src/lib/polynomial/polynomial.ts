@@ -7,7 +7,7 @@ export class Polynomial {
   constructor(degree: number, constant: bigint = 0n) {
     this.coefficients = [];
     this.coefficients.push(constant);
-    for (let i = 1; i < degree; i++) {
+    for (let i = 1; i <= degree; i++) {
       this.coefficients.push(sampleScalar());
     }
   }

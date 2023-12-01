@@ -69,6 +69,7 @@ export class KeygenRound2 {
       broadcasts,
       inputForRound3: {
         inputForRound2: this.input,
+        commitments: this.commitments,
       },
     };
   }
