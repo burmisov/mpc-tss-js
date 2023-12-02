@@ -10,7 +10,15 @@ https://eprint.iacr.org/2021/060
 
 ## Current status
 
-Updated Nov 30, 2023
+Updated Dec 2, 2023:
+
+Milestone 2 sort of complete -- the library is able to generate a 3-party
+configuration via a keygen ceremony; this configuration is tested to be ingestable
+by the signing ceremony and to produce a valid signature in the end.
+Some issues leftover: proper key configuration hashing that is required
+at Round 4 of keygen, as well as multiple minor ones.
+
+Updated Nov 30, 2023:
 
 Milestone 1 complete -- the library is able to perform a "2 out of 3" or
 "3 out of 3" parties ECDSA signature (and probably other party numbers, too),
@@ -56,7 +64,7 @@ like emulates) signatories communication throught the 5 rounds of creating a sig
 
 ### Features
 
-- [ ] MILESTONE 2: Implement a key generation ceremony; generate valid party setups and create a valid signature
+- [x] MILESTONE 2: Implement a key generation ceremony; generate valid party setups and create a valid signature
 - [x] ZK Proofs -- sch
 - [x] ZK Proofs -- fac
 - [x] ZK Proofs -- mod
@@ -68,7 +76,9 @@ like emulates) signatories communication throught the 5 rounds of creating a sig
 - [x] Keygen round 3
 - [x] Keygen round 4
 - [x] Keygen round 5
-- [ ] End-to-end test with keygen and signing with fresh keys
+- [ ] Implement KeyConfig hashing and amend round 5
+- [x] End-to-end test with keygen and signing with fresh keys (manual)
+- [ ] End-to-end test with keygen and signing with fresh keys (auto)
 - [ ] check zk/mod
 
 ### Other
