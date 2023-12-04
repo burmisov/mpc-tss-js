@@ -5,7 +5,8 @@
   "description": "Multi-Party Computation Threshold Signature Scheme Implementation in Javascript",
   "repository": "github:burmisov/mpc-tss-js",
   "scripts": {
-    "test": "node --import tsx --test src/**/*.test.ts src/**/**/*.test.ts"
+    "test": "node --import tsx --test src/**/*.test.ts src/**/**/*.test.ts",
+    "test:e2e": "node --import tsx --test src/test/e2e.ts"
   },
   "author": "Sergey Burmisov <sergey@burmisov.com> (https://burmisov.com)",
   "license": "Apache-2.0",
