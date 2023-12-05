@@ -11,6 +11,23 @@ export interface Hashable {
 
 type Ingestable = IngestableBasic | ProjectivePoint | AffinePoint | Hashable;
 
+const isPoint = (data: Ingestable): boolean => {
+  return typeof (data as AffinePoint).x === 'bigint' &&
+    typeof (data as AffinePoint).y === 'bigint';
+}
+
+const pointToHashable = (data: AffinePoint | ProjectivePoint): Hashable => {
+  const captured: IngestableBasic[] = []
+  if (typeof (data as ProjectivePoint).toRawBytes === 'function') {
+    captured.push((data as ProjectivePoint).toRawBytes());
+  } else {
+    captured.push((data as AffinePoint).x, (data as AffinePoint).y);
+  }
+  return {
+    hashable: () => captured,
+  };
+};
+
 export class Hasher {
   private hash: ReturnType<typeof blake3.create>;
   private used: boolean = false;
@@ -71,7 +88,6 @@ export class Hasher {
     return this;
   }
 
-  // TODO: make identifiable objects instead?..
   public update(data: Ingestable): Hasher {
     this.checkUsed();
     let buf: Array<IngestableBasic> = [];
@@ -83,16 +99,8 @@ export class Hasher {
       buf.push(data);
     } else if (typeof (data as Hashable).hashable === 'function') {
       buf = buf.concat((data as Hashable).hashable());
-    } else if (
-      typeof (data as AffinePoint).x === 'bigint' &&
-      typeof (data as AffinePoint).y === 'bigint'
-    ) {
-      if (typeof (data as ProjectivePoint).toRawBytes === 'function') {
-        buf.push((data as ProjectivePoint).toRawBytes());
-      } else {
-        buf.push((data as AffinePoint).x);
-        buf.push((data as AffinePoint).y);
-      }
+    } else if (isPoint(data)) {
+      buf = buf.concat(pointToHashable(data as ProjectivePoint | AffinePoint).hashable());
     } else {
       throw new Error(`Unsupported data type: ${data}`);
     }
@@ -125,7 +133,7 @@ export class Hasher {
     };
   }
 
-  static validateCommitment(
+  public static validateCommitment(
     commitment: Uint8Array,
   ): void {
     if (commitment.length !== 32) { throw new Error('Bad commitment length'); }
