@@ -3,17 +3,25 @@ import { secp256k1 } from "@noble/curves/secp256k1";
 import { AffinePoint, ProjectivePoint } from "../common.types.js";
 import { Polynomial } from "./polynomial.js";
 import Fn from "../Fn.js";
+import { Hashable, IngestableBasic } from "../Hasher.js";
 
-export class Exponent {
+export class Exponent implements Hashable {
   public isConstant: boolean;
   public coefficients: Array<ProjectivePoint>;
 
-  constructor(isConstant: boolean, coefficients: Array<ProjectivePoint>) {
+  private constructor(isConstant: boolean, coefficients: Array<ProjectivePoint>) {
     this.isConstant = isConstant;
     this.coefficients = coefficients;
   }
 
-  static new(poly: Polynomial): Exponent {
+  hashable(): IngestableBasic[] {
+    return this.coefficients.flatMap(a => {
+      const p = a.toAffine();
+      return [p.x, p.y];
+    });
+  }
+
+  static fromPoly(poly: Polynomial): Exponent {
     const isConstant = poly.coefficients[0] === 0n;
     const coefficients = [];
     for (let i = 0; i < poly.coefficients.length; i++) {
@@ -23,7 +31,9 @@ export class Exponent {
         coefficients.push(secp256k1.ProjectivePoint.BASE.multiply(poly.coefficients[i]));
       }
     }
-    return new Exponent(isConstant, coefficients);
+    const exp = new Exponent(isConstant, coefficients);
+    Object.freeze(exp);
+    return exp;
   }
 
   public evaluate(x: bigint): AffinePoint {
@@ -85,8 +95,10 @@ export class Exponent {
   }
 
   public copy(): Exponent {
-    return new Exponent(this.isConstant, this.coefficients.slice());
+    const copyExp = new Exponent(this.isConstant, this.coefficients.slice());
+    Object.freeze(copyExp);
+    return copyExp;
   }
 
-  // TODO: more methods
+  // TODO: more methods?
 }

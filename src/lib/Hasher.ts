@@ -3,14 +3,13 @@ import { blake3 } from "@noble/hashes/blake3";
 import { Input, hexToBytes } from "@noble/hashes/utils";
 import { ProjectivePoint, AffinePoint } from "./common.types.js";
 import { randBytesSync } from "bigint-crypto-utils";
-import { Exponent } from "./polynomial/exponent.js";
 
 export type IngestableBasic = Uint8Array | string | bigint;
 export interface Hashable {
   hashable(): Array<IngestableBasic>;
 }
 
-type Ingestable = IngestableBasic | ProjectivePoint | AffinePoint |  Exponent | Hashable;
+type Ingestable = IngestableBasic | ProjectivePoint | AffinePoint | Hashable;
 
 export class Hasher {
   private hash: ReturnType<typeof blake3.create>;
@@ -84,12 +83,6 @@ export class Hasher {
       buf.push(data);
     } else if (typeof (data as Hashable).hashable === 'function') {
       buf = buf.concat((data as Hashable).hashable());
-    } else if (data instanceof Exponent) {
-      for (let i = 0; i < data.coefficients.length; i += 1) {
-        const p = data.coefficients[i].toAffine();
-        buf.push(p.x);
-        buf.push(p.y);
-      }
     } else if (
       typeof (data as AffinePoint).x === 'bigint' &&
       typeof (data as AffinePoint).y === 'bigint'

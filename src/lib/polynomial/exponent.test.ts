@@ -19,7 +19,7 @@ describe("Exponent", () => {
         secret = sampleScalar();
       }
       const poly = Polynomial.new(N, secret);
-      const polyExp = Exponent.new(poly);
+      const polyExp = Exponent.fromPoly(poly);
 
       const randomIndex = sampleScalar();
 
@@ -47,7 +47,7 @@ describe("Exponent", () => {
     for (let i = 0; i < N; i++) {
       const sec = sampleScalar();
       polys[i] = Polynomial.new(Deg, sec);
-      polysExp[i] = Exponent.new(polys[i]);
+      polysExp[i] = Exponent.fromPoly(polys[i]);
 
       evaluationScalar = Fn.add(evaluationScalar, polys[i].evaluate(randomIndex));
       evaluationPartial = evaluationPartial.add(

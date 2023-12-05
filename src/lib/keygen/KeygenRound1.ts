@@ -60,7 +60,7 @@ export class KeygenRound1 {
       partyIdToScalar(this.session.selfId),
     );
 
-    const selfVSSpolynomial = Exponent.new(this.session.inputForRound1.vssSecret);
+    const selfVSSpolynomial = Exponent.fromPoly(this.session.inputForRound1.vssSecret);
 
     const schnorrRand = zkSchCreateRandomness();
 
