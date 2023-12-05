@@ -7,7 +7,7 @@ import {
 } from "./logstar.js";
 import { sampleIntervalL } from "../sample.js";
 import {
-  paillierEncrypt, paillierGeneratePedersen,
+  paillierEncrypt, generatePedersen,
   paillierSecretKeyFromPrimes, validatePaillierPrime,
 } from "../paillier.js";
 import { secp256k1 } from "@noble/curves/secp256k1";
@@ -24,7 +24,7 @@ describe("zk/enc", () => {
     const paillierSecretKey = paillierSecretKeyFromPrimes(p, q);
     const paillierPublicKey = paillierSecretKey.publicKey;
 
-    const { pedersen } = paillierGeneratePedersen(paillierSecretKey);
+    const { pedersen } = generatePedersen(paillierSecretKey);
 
     const Gproj = secp256k1.ProjectivePoint.BASE.multiply(
       randBetween(secp256k1.CURVE.n - 1n)

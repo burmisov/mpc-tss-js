@@ -2,11 +2,11 @@ import { modAdd, modMultiply, modPow } from "bigint-crypto-utils";
 
 import { Hasher } from "../Hasher.js";
 import { isValidModN } from "../arith.js";
-import { PedersenParameters, pedersenValidateParameters } from "../pedersen.js";
+import { PedersenParams } from "../pedersen.js";
 import { STAT_PARAM, sampleModN } from "../sample.js";
 
 export type ZkPrmPublic = {
-  Aux: PedersenParameters;
+  Aux: PedersenParams;
 };
 
 export type ZkPrmPrivate = {
@@ -63,7 +63,7 @@ export const zkPrmVerifyProof = (
 ): boolean => {
   if (!proof) { return false; }
   try {
-    pedersenValidateParameters(pub.Aux);
+    pub.Aux.validate();
   } catch (e) {
     return false;
   }

@@ -7,7 +7,7 @@ import {
 } from "./enc.js";
 import { sampleIntervalL } from "../sample.js";
 import {
-  paillierEncrypt, paillierGeneratePedersen,
+  paillierEncrypt, generatePedersen,
   paillierSecretKeyFromPrimes, validatePaillierPrime,
 } from "../paillier.js";
 import { Hasher } from "../Hasher.js";
@@ -24,7 +24,7 @@ describe("zk/enc", () => {
     const paillierSecretKey = paillierSecretKeyFromPrimes(p, q);
     const paillierPublicKey = paillierSecretKey.publicKey;
 
-    const { pedersen } = paillierGeneratePedersen(paillierSecretKey);
+    const { pedersen } = generatePedersen(paillierSecretKey);
 
     const { ciphertext: K, nonce: rho } = paillierEncrypt(paillierPublicKey, k);
 

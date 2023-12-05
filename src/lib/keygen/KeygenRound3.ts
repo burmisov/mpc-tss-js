@@ -4,7 +4,7 @@ import { PartyId, partyIdToScalar } from "../keyConfig.js";
 import {
   PaillierPublicKey, paillierEncrypt, paillierPublicKeyFromN, paillierValidateN,
 } from "../paillier.js";
-import { PedersenParameters, pedersenValidateParameters } from "../pedersen.js";
+import { PedersenParams } from "../pedersen.js";
 import { Exponent } from "../polynomial/exponent.js";
 import { ZkFacPrivate, ZkFacPublic, zkFacCreateProof } from "../zk/fac.js";
 import { ZkModPrivate, ZkModPublic, zkModCreateProof } from "../zk/mod.js";
@@ -23,7 +23,7 @@ export type KeygenBroadcastForRound3 = {
   vssPolynomial: Exponent,
   schnorrCommitment: ZkSchCommitment,
   elGamalPublic: AffinePoint,
-  pedersenPublic: PedersenParameters,
+  pedersenPublic: PedersenParams,
   decommitment: Uint8Array,
 };
 
@@ -42,7 +42,7 @@ export class KeygenRound3 {
   private RIDs: Record<PartyId, bigint> = {};
   private ChainKeys: Record<PartyId, bigint> = {};
   private PaillierPublic: Record<PartyId, PaillierPublicKey> = {};
-  private Pedersen: Record<PartyId, PedersenParameters> = {};
+  private Pedersen: Record<PartyId, PedersenParams> = {};
   private vssPolynomials: Record<PartyId, Exponent> = {};
   private SchnorrCommitments: Record<PartyId, ZkSchCommitment> = {};
   private ElGamalPublic: Record<PartyId, AffinePoint> = {};
@@ -70,7 +70,7 @@ export class KeygenRound3 {
 
     paillierValidateN(bmsg.pedersenPublic.n);
 
-    pedersenValidateParameters(bmsg.pedersenPublic);
+    bmsg.pedersenPublic.validate();
 
     const decomValid = this.session.cloneHashForId(from).decommit(
       this.inputForRound3.commitments[from],

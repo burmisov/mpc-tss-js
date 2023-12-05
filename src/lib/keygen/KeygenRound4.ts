@@ -5,7 +5,7 @@ import {
   PartyId, PartyPublicKeyConfig, PartySecretKeyConfig, partyIdToScalar,
 } from "../keyConfig.js";
 import { PaillierPublicKey, paillierDecrypt, validateCiphertext } from "../paillier.js";
-import { PedersenParameters } from "../pedersen.js";
+import { PedersenParams } from "../pedersen.js";
 import { Exponent } from "../polynomial/exponent.js";
 import { ZkFacProof, ZkFacPublic, zkFacVerifyProof } from "../zk/fac.js";
 import { ZkModProof, ZkModPublic, zkModVerifyProof } from "../zk/mod.js";
@@ -13,7 +13,7 @@ import { ZkPrmProof, ZkPrmPublic, zkPrmVerifyProof } from "../zk/prm.js";
 import { KeygenInputForRound3 } from "./KeygenRound3.js";
 import { KeygenSession } from "./KeygenSession.js";
 import { AffinePoint } from "../common.types.js";
-import { ZkSchCommitment, zkSchProve, zkSchVerifyResponse } from "../zk/zksch.js";
+import { ZkSchCommitment, zkSchProve } from "../zk/zksch.js";
 import { KeygenBroadcastForRound5, KeygenInputForRound5 } from "./KeygenRound5.js";
 
 export type KeygenBroadcastForRound4 = {
@@ -33,7 +33,7 @@ export type KeygenInputForRound4 = {
   inputForRound3: KeygenInputForRound3,
   RID: bigint,
   ChainKey: bigint,
-  PedersenPublic: Record<PartyId, PedersenParameters>,
+  PedersenPublic: Record<PartyId, PedersenParams>,
   PaillierPublic: Record<PartyId, PaillierPublicKey>,
   vssPolynomials: Record<PartyId, Exponent>,
   ElGamalPublic: Record<PartyId, AffinePoint>,

@@ -7,9 +7,7 @@ import {
   paillierSecretKeyFromSerialized,
   paillierSecretKeyToSerialized,
 } from './paillier.js';
-import {
-  PedersenParameters, PedersenParametersSerialized, pedersenParametersFromSerialized, pedersenParametersToSerialized,
-} from './pedersen.js';
+import { PedersenParametersJSON, PedersenParams } from './pedersen.js';
 import { lagrange } from './polynomial/lagrange.js';
 import { bytesToNumberBE } from '@noble/curves/abstract/utils';
 import { utf8ToBytes } from '@noble/hashes/utils';
@@ -21,7 +19,7 @@ export type PartyPublicKeyConfig = {
   ecdsa: AffinePoint,
   elgamal: AffinePoint,
   paillier: PaillierPublicKey,
-  pedersen: PedersenParameters,
+  pedersen: PedersenParams,
 };
 
 export type PartyPublicKeyConfigSerialized = {
@@ -29,7 +27,7 @@ export type PartyPublicKeyConfigSerialized = {
   ecdsa: AffinePointSerialized
   elgamal: AffinePointSerialized,
   paillier: PaillierPublicKeySerialized,
-  pedersen: PedersenParametersSerialized,
+  pedersen: PedersenParametersJSON,
 };
 
 const deserializePartyPublicKeyConfig = (
@@ -46,7 +44,7 @@ const deserializePartyPublicKeyConfig = (
       y: BigInt('0x' + serialized.elgamal.yHex),
     },
     paillier: paillierPublicKeyFromSerialized(serialized.paillier),
-    pedersen: pedersenParametersFromSerialized(serialized.pedersen),
+    pedersen: PedersenParams.fromJSON(serialized.pedersen),
   };
 }
 
@@ -64,7 +62,7 @@ const serializePartyPublicKeyConfig = (
       yHex: config.elgamal.y.toString(16),
     },
     paillier: paillierPublicKeyToSerialized(config.paillier),
-    pedersen: pedersenParametersToSerialized(config.pedersen),
+    pedersen: config.pedersen.toJSON(),
   };
 }
 

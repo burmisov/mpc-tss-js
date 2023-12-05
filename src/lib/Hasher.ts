@@ -3,13 +3,16 @@ import { blake3 } from "@noble/hashes/blake3";
 import { Input, hexToBytes } from "@noble/hashes/utils";
 import { ProjectivePoint, AffinePoint } from "./common.types.js";
 import { PaillierPublicKey } from "./paillier.js";
-import { PedersenParameters } from "./pedersen.js";
 import { randBytesSync } from "bigint-crypto-utils";
 import { Exponent } from "./polynomial/exponent.js";
 
-type IngestableBasic = Uint8Array | string | bigint;
+export type IngestableBasic = Uint8Array | string | bigint;
+export interface Hashable {
+  hashable(): Array<IngestableBasic>;
+}
+
 type Ingestable = IngestableBasic | ProjectivePoint | AffinePoint |
-  PaillierPublicKey | PedersenParameters | Exponent;
+  PaillierPublicKey | Exponent | Hashable;
 
 export class Hasher {
   private hash: ReturnType<typeof blake3.create>;
@@ -81,6 +84,8 @@ export class Hasher {
       typeof data === 'bigint'
     ) {
       buf.push(data);
+    } else if (typeof (data as Hashable).hashable === 'function') {
+      buf = buf.concat((data as Hashable).hashable());
     } else if (data instanceof Exponent) {
       for (let i = 0; i < data.coefficients.length; i += 1) {
         const p = data.coefficients[i].toAffine();
@@ -95,15 +100,6 @@ export class Hasher {
       buf.push((data as PaillierPublicKey).n);
       buf.push((data as PaillierPublicKey).nSquared);
       buf.push((data as PaillierPublicKey).nPlusOne);
-    } else if (
-      typeof (data as PedersenParameters).n === 'bigint' &&
-      typeof (data as PedersenParameters).s === 'bigint' &&
-      typeof (data as PedersenParameters).t === 'bigint' &&
-      Object.keys(data).length === 3
-    ) {
-      buf.push((data as PedersenParameters).n);
-      buf.push((data as PedersenParameters).s);
-      buf.push((data as PedersenParameters).t);
     } else if (
       typeof (data as AffinePoint).x === 'bigint' &&
       typeof (data as AffinePoint).y === 'bigint'

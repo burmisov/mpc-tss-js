@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from 'node:assert/strict';
-import { pedersenCommit, pedersenValidateParameters } from "./pedersen.js";
+import { PedersenParams } from "./pedersen.js";
 
 describe("Pedersen commitment scheme", async () => {
   const p = BigInt('0xd08769e92f80f7fdfb85ec02affdaed0fde2782070757f191dcdc4d108110ac1e31c07fc253b5f7b91c5d9f203aa0572d3f2062a3d2904c535c6acca7d5674e1c2640720e762c72b66931f483c2d910908cf02ea6723a0cbbb1016ca696c38feac59b31e40584c8141889a11f7a38f5b17811d11f42cd15b8470f11c6183802b');
@@ -8,16 +8,16 @@ describe("Pedersen commitment scheme", async () => {
   const s = BigInt('0x2a1023add5bef3f3c2dcaf8b99713c18cf5bc42f38797bafc808e5856f45e7ec51c450da2b03171dba0f0fa29025a7ed910a8b1bc13772bd79d4718a6dc618de354d8f46378ac1bd6e2030ab761c4a2878f859c692823b60e5f4e4bb7bcd16dceccbfbe65016de88bb576a897e73f32456c07ad7dc61013c4a90fd509c79200a8d04310ad5338d32d861a73398677c1d3a2cba958f9232b4e83aa4b133e7d1e694ff4615be9f4e73b51c13f1193402ce36bfa0970c8b4c67920b5122b3b77dc3ac8f8fe92c7912649808f999309ae8b8641ea330b5e8bfff8528fc8d85b84bd61e2ff5a261e80434444cc407cba4d5fae2d2587af7624d2b99f4ff33640ba0f0');
   const t = BigInt('0x376a2c4a49b8c27f943059a358bcd65bcc0bab1abbbe368ffd004580a49ee795b4ecf85b2fb2a24969129e34e9e5d91503d11de9d11f51538ac66a418b2e31463a55aafaa29b645c2d04fbc829e3b55f95bfb0b5de464ed0516df28d36b4225b4050b80271e1ad8f11866e01ff83d40a06a7f7298fd96b210be56aa4d3c0524e7372e371d0c6e52e043d2e1bf38e435ed85eb032fac86c049e9fb8280847abed9f2025fe03c7b8b8e32914238e3281ba17a2db4cb2acad033442ef55e1bf2e4a741a961833cbe87c8c751e8a59ef998528ba0658cb9342eedbdf62894e4ae66414024361d916248801d2929326102081bb2f7ad1c57c55ae8038ee35cc2c9915');
   const n = p * q;
-  const parameters = { n, s, t };
+  const parameters = PedersenParams.from(n, s, t);
 
   it("fixtures valid", async () => {
-    pedersenValidateParameters(parameters);
+    parameters.validate();
   });
 
   it("produces a valid commitment", async () => {
     const x = BigInt('0x1234567890abcdef');
     const y = BigInt('0x1234567890fedcba');
-    const commitment = pedersenCommit(parameters, x, y);
+    const commitment = parameters.commit(x, y);
 
     assert.equal(
       commitment,

@@ -6,18 +6,17 @@ import {
   PaillierPublicKey, paillierAdd, paillierEncryptWithNonce,
   paillierMultiply, validateCiphertext
 } from "../paillier.js";
-import { PedersenParameters, pedersenCommit, pedersenVerify } from "../pedersen.js";
+import { PedersenParams } from "../pedersen.js";
 import {
   sampleUnitModN, sampleIntervalLeps, sampleIntervalLN,
   sampleIntervalLepsN
 } from "../sample.js";
 import { Hasher } from "../Hasher.js";
-import { hash } from "@noble/hashes/_assert";
 
 export type ZkEncPublic = {
   K: bigint, // Paillier ciphertext
   prover: PaillierPublicKey,
-  aux: PedersenParameters,
+  aux: PedersenParams,
 };
 
 export type ZkEncPrivate = {
@@ -75,9 +74,9 @@ export const zkEncCreateProof = (
   const A = paillierEncryptWithNonce(pub.prover, alpha, r);
 
   const commitment: ZkEncCommitment = {
-    S: pedersenCommit(pub.aux, priv.k, mu),
+    S: pub.aux.commit(priv.k, mu),
     A,
-    C: pedersenCommit(pub.aux, alpha, gamma),
+    C: pub.aux.commit(alpha, gamma),
   };
 
   const e = challenge(pub, commitment, hasher);
@@ -107,9 +106,7 @@ export const zkEncVerifyProof = (
   if (!isInIntervalLeps(proof.Z1)) { return false; }
 
   const e = challenge(pub, proof.commitment, hasher);
-  if (!pedersenVerify(
-    pub.aux, proof.Z1, proof.Z3, e, proof.commitment.C, proof.commitment.S,
-  )) {
+  if (!pub.aux.verify(proof.Z1, proof.Z3, e, proof.commitment.C, proof.commitment.S)) {
     return false;
   }
 

@@ -11,7 +11,7 @@ import {
 import { ZkEncPrivate, ZkEncPublic, zkEncCreateProof } from "../zk/enc.js";
 import { sampleScalarPointPair, sampleScalar } from "../sample.js";
 import { AffinePoint } from "../common.types.js";
-import { PedersenParameters } from "../pedersen.js";
+import { PedersenParams } from "../pedersen.js";
 
 export type SignPartyInputRound1 = {
   publicKey: AffinePoint;
@@ -19,7 +19,7 @@ export type SignPartyInputRound1 = {
   secretPaillier: PaillierSecretKey;
   partiesPublic: Record<string, {
     paillier: PaillierPublicKey;
-    pedersen: PedersenParameters;
+    pedersen: PedersenParams;
     ecdsa: AffinePoint;
   }>;
   message: Uint8Array;

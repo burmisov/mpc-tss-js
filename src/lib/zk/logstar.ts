@@ -3,7 +3,7 @@ import { secp256k1 } from "@noble/curves/secp256k1";
 import { isInIntervalLeps, isValidModN } from "../arith.js";
 import { AffinePoint } from "../common.types.js";
 import { PaillierPublicKey, paillierAdd, paillierEncryptWithNonce, paillierMultiply, validateCiphertext } from "../paillier.js";
-import { PedersenParameters, pedersenCommit, pedersenVerify } from "../pedersen.js";
+import { PedersenParams } from "../pedersen.js";
 import {
   sampleIntervalLN, sampleIntervalLeps, sampleIntervalLepsN,
   sampleUnitModN,
@@ -18,7 +18,7 @@ export type ZkLogstarPublic = {
   X: AffinePoint;
   G?: AffinePoint;
   prover: PaillierPublicKey;
-  aux: PedersenParameters;
+  aux: PedersenParams;
 };
 
 export type ZkLogstarPrivate = {
@@ -72,8 +72,8 @@ export const zkLogstarCreateProof = (
   const commitment: ZkLogstarCommitment = {
     A: paillierEncryptWithNonce(pub.prover, alpha, r),
     Y: pointG.multiply(Fn.mod(alpha)).toAffine(),
-    S: pedersenCommit(pub.aux, priv.X, mu),
-    D: pedersenCommit(pub.aux, alpha, gamma),
+    S: pub.aux.commit(priv.X, mu),
+    D: pub.aux.commit(alpha, gamma),
   };
 
   const e = challenge(pub, commitment, hasher);
@@ -114,9 +114,9 @@ export const zkLogstarVerifyProof = (
 
   const e = challenge(pub, proof.commitment, hasher);
 
-  if (!pedersenVerify(
-    pub.aux, proof.Z1, proof.Z3, e, proof.commitment.D, proof.commitment.S,
-  )) { return false; }
+  if (!pub.aux.verify(proof.Z1, proof.Z3, e, proof.commitment.D, proof.commitment.S)) {
+    return false;
+  }
 
   const lhs = paillierEncryptWithNonce(pub.prover, proof.Z1, proof.Z2);
   const rhs = paillierAdd(

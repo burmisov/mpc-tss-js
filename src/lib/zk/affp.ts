@@ -7,7 +7,7 @@ import {
   PaillierPublicKey, paillierAdd, paillierEncryptWithNonce,
   paillierMultiply, validateCiphertext,
 } from "../paillier.js";
-import { PedersenParameters, pedersenCommit, pedersenVerify } from "../pedersen.js";
+import { PedersenParams } from "../pedersen.js";
 import {
   sampleIntervalLN, sampleIntervalLeps, sampleIntervalLepsN,
   sampleIntervalLprimeEps, sampleUnitModN,
@@ -20,7 +20,7 @@ export type ZkAffpPublic = {
   Xp: bigint; // Ciphertext
   prover: PaillierPublicKey;
   verifier: PaillierPublicKey;
-  aux: PedersenParameters;
+  aux: PedersenParams;
 };
 
 export type ZkAffpPrivate = {
@@ -90,10 +90,10 @@ export const zkAffpCreateProof = (
     cAlpha,
   );
 
-  const E = pedersenCommit(pub.aux, alpha, gamma);
-  const S = pedersenCommit(pub.aux, priv.X, m);
-  const F = pedersenCommit(pub.aux, beta, delta);
-  const T = pedersenCommit(pub.aux, priv.Y, mu);
+  const E = pub.aux.commit(alpha, gamma);
+  const S = pub.aux.commit(priv.X, m);
+  const F = pub.aux.commit(beta, delta);
+  const T = pub.aux.commit(priv.Y, mu);
 
   const Bx = paillierEncryptWithNonce(pub.prover, alpha, rhoX);
   const By = paillierEncryptWithNonce(pub.prover, beta, rhoY);
@@ -159,15 +159,11 @@ export const zkAffpVerifyProof = (
     if (lhs !== rhs) { return false; }
   }
 
-  if (!pedersenVerify(
-    pub.aux, proof.Z1, proof.Z3, e, proof.commitment.E, proof.commitment.S
-  )) {
+  if (!pub.aux.verify(proof.Z1, proof.Z3, e, proof.commitment.E, proof.commitment.S)) {
     return false;
   }
 
-  if (!pedersenVerify(
-    pub.aux, proof.Z2, proof.Z4, e, proof.commitment.F, proof.commitment.T
-  )) {
+  if (!pub.aux.verify(proof.Z2, proof.Z4, e, proof.commitment.F, proof.commitment.T)) {
     return false;
   }
 

@@ -8,7 +8,7 @@ import {
 } from 'bigint-crypto-utils';
 
 import { sampleUnitModN } from './sample.js';
-import { PedersenParameters } from './pedersen.js';
+import { PedersenParams } from './pedersen.js';
 
 export type PaillierSecretKey = {
   p: bigint;
@@ -179,17 +179,14 @@ export const paillierMultiply = (
   return ciphertextProduct;
 }
 
-export const paillierGeneratePedersen = (
+export const generatePedersen = (
   secretKey: PaillierSecretKey,
 ): {
-  pedersen: PedersenParameters,
+  pedersen: PedersenParams,
   lambda: bigint,
 } => {
   const { s, t, lambda } = samplePedersen(secretKey.phi, secretKey.publicKey.n);
-  const pedersen: PedersenParameters = {
-    n: secretKey.publicKey.n,
-    s, t,
-  };
+  const pedersen = PedersenParams.from(secretKey.publicKey.n, s, t);
   return { pedersen, lambda };
 }
 

@@ -4,18 +4,18 @@ import assert from 'node:assert/strict';
 import {
   PaillierPublicKey,
   PaillierSecretKey,
-  paillierGeneratePedersen, paillierSecretKeyFromPrimes, validatePaillierPrime,
+  generatePedersen, paillierSecretKeyFromPrimes, validatePaillierPrime,
 } from '../paillier.js';
 import { ZkFacPrivate, ZkFacPublic, zkFacCreateProof, zkFacVerifyProof } from './fac.js';
 import { Hasher } from '../Hasher.js';
-import { PedersenParameters } from '../pedersen.js';
+import { PedersenParams } from '../pedersen.js';
 
 test('zk/fac', async () => {
   let proverPaillierSecretKey: PaillierSecretKey;
   let proverPaillierPublicKey: PaillierPublicKey;
   let verifierPaillierSecretKey: PaillierSecretKey;
   let verifierPaillierPublicKey: PaillierPublicKey;
-  let verifierPedersen: PedersenParameters;
+  let verifierPedersen: PedersenParams;
 
   {
     const p = 167495246782569910107862669897619243075835098207853220101403982609959943903743345646375788362909715211900141652671436007095125366426921092792005772260273820630537327116191279465491203987638225198595642843240698088777581339844121640128731583440776342448939839731522446469995390448902946229002446098530004835239n;
@@ -33,7 +33,7 @@ test('zk/fac', async () => {
     await validatePaillierPrime(q);
     verifierPaillierSecretKey = paillierSecretKeyFromPrimes(p, q);
     verifierPaillierPublicKey = verifierPaillierSecretKey.publicKey;
-    const { pedersen } = paillierGeneratePedersen(verifierPaillierSecretKey);
+    const { pedersen } = generatePedersen(verifierPaillierSecretKey);
     verifierPedersen = pedersen;
   }
 

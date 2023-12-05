@@ -12,10 +12,7 @@ import {
   PaillierPublicKeySerialized, PaillierSecretKeySerialized,
   paillierPublicKeyFromSerialized, paillierSecretKeyFromSerialized,
 } from '../paillier.js';
-import {
-  PedersenParametersSerialized, pedersenParametersFromSerialized,
-  pedersenValidateParameters,
-} from '../pedersen.js';
+import { PedersenParametersJSON, PedersenParams } from '../pedersen.js';
 import { SignRequestSerialized, deserializeSignRequest } from './sign.js';
 import { SignPartyInputRound1, SignPartyOutputRound1 } from './SignerRound1.js';
 import { SignerRound1 } from './SignerRound1.js';
@@ -188,12 +185,12 @@ describe('sign 3/3 (all parties)', () => {
   }
 
   const checkPedersenFixture = (
-    pedersenParametersSerialized: PedersenParametersSerialized,
+    pedersenParametersSerialized: PedersenParametersJSON,
   ) => {
-    const pedersenParams = pedersenParametersFromSerialized(
+    const pedersenParams = PedersenParams.fromJSON(
       pedersenParametersSerialized,
     );
-    pedersenValidateParameters(pedersenParams);
+    pedersenParams.validate();
   }
 
   it('fixtures valid', () => {

@@ -4,7 +4,7 @@ import {
   PaillierPublicKey, PaillierSecretKey,
   paillierAdd, paillierEncrypt, paillierMultiply,
 } from "./paillier.js";
-import { PedersenParameters } from "./pedersen.js";
+import { PedersenParams } from "./pedersen.js";
 import { sampleIntervalLprime } from "./sample.js";
 import {
   ZkAffgPrivate, ZkAffgProof, ZkAffgPublic, zkAffgCreateProof,
@@ -19,7 +19,7 @@ export const mtaProveAffG = (
   receiverEncryptedShare: bigint, // Ciphertext
   sender: PaillierSecretKey,
   receiver: PaillierPublicKey,
-  verifier: PedersenParameters,
+  verifier: PedersenParams,
   hasher: Hasher,
 ): {
   Beta: bigint,
@@ -60,7 +60,7 @@ export const mtaProveAffP = (
   receiverEncryptedShare: bigint, // Ciphertext
   sender: PaillierSecretKey,
   receiver: PaillierPublicKey,
-  verifier: PedersenParameters,
+  verifier: PedersenParams,
   hasher: Hasher,
 ): {
   Beta: bigint,

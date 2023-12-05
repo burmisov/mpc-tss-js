@@ -9,7 +9,7 @@ import { KeygenRound2, KeygenRound2Output } from './KeygenRound2.js';
 import { KeygenRound3, KeygenRound3Output } from './KeygenRound3.js';
 import { KeygenRound4, KeygenRound4Output } from './KeygenRound4.js';
 import { KeygenRound5, KeygenRound5Output } from './KeygenRound5.js';
-import { getPublicPoint, serializePartySecretKeyConfig } from '../keyConfig.js';
+import { getPublicPoint } from '../keyConfig.js';
 import { ethAddress } from '../eth.js';
 
 const precomputedPaillierPrimesA = {

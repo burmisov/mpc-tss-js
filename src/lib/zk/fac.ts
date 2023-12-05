@@ -1,7 +1,7 @@
 import { modMultiply, modPow } from "bigint-crypto-utils";
 
 import { Hasher } from "../Hasher.js";
-import { PedersenParameters, pedersenCommit, pedersenVerify } from "../pedersen.js";
+import { PedersenParams } from "../pedersen.js";
 import {
   sampleIntervalLEpsRootN, sampleIntervalLN,
   sampleIntervalLN2, sampleIntervalLepsN,
@@ -11,7 +11,7 @@ import { isInIntervalLEpsPlus1RootN } from "../arith.js";
 
 export type ZkFacPublic = {
   N: bigint;
-  Aux: PedersenParameters;
+  Aux: PedersenParams;
 };
 
 export type ZkFacPrivate = {
@@ -55,10 +55,10 @@ export const zkFacCreateProof = (
 
   const pInt = priv.P;
   const qInt = priv.Q;
-  const P = pedersenCommit(pub.Aux, pInt, mu);
-  const Q = pedersenCommit(pub.Aux, qInt, nu);
-  const A = pedersenCommit(pub.Aux, alpha, x);
-  const B = pedersenCommit(pub.Aux, beta, y);
+  const P = pub.Aux.commit(pInt, mu);
+  const Q = pub.Aux.commit(qInt, nu);
+  const A = pub.Aux.commit(alpha, x);
+  const B = pub.Aux.commit(beta, y);
   const T = modMultiply(
     [
       modPow(Q, alpha, Nhat),
@@ -93,13 +93,13 @@ export const zkFacVerifyProof = (
   const N0 = pub.N;
   const Nhat = pub.Aux.n;
 
-  if (!pedersenVerify(
-    pub.Aux, proof.Z1, proof.W1, e, proof.comm.A, proof.comm.P,
-  )) { return false; }
+  if (!pub.Aux.verify(proof.Z1, proof.W1, e, proof.comm.A, proof.comm.P)) {
+    return false;
+  }
 
-  if (!pedersenVerify(
-    pub.Aux, proof.Z2, proof.W2, e, proof.comm.B, proof.comm.Q,
-  )) { return false; }
+  if (!pub.Aux.verify(proof.Z2, proof.W2, e, proof.comm.B, proof.comm.Q)) {
+    return false;
+  }
 
   const R = modMultiply(
     [

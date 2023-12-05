@@ -3,7 +3,7 @@ import assert from 'assert/strict';
 import { Hasher } from "./Hasher.js";
 import { AffinePoint } from "./common.types.js";
 import { secp256k1 } from "@noble/curves/secp256k1";
-import { paillierGeneratePedersen, paillierSecretKeyFromPrimes } from "./paillier.js";
+import { generatePedersen, paillierSecretKeyFromPrimes } from "./paillier.js";
 
 describe('Hasher', () => {
   const p = 179592502110335963336347735108907147317760904272746519157588428198851642173043932077383231024080457777437444199308940940528740158020956955835017958704625931695110457545843284994471316520797998498062474296013358438785968440081020607611888287234488233606613994066898948321434201732737366068220153564935475802567n;
@@ -93,7 +93,7 @@ describe('Hasher', () => {
   });
 
   it('hashes Pedersen parameters', () => {
-    const { pedersen } = paillierGeneratePedersen(paillierSecretKey);
+    const { pedersen } = generatePedersen(paillierSecretKey);
     const hash = hasher.update(pedersen).digestBigint();
     const originalHash = new Hasher()
       .update(pedersen.n)

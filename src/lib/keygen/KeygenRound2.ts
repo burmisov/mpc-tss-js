@@ -2,7 +2,7 @@ import { Hasher } from "../Hasher.js";
 import { AffinePoint } from "../common.types.js";
 import { PartyId } from "../keyConfig.js";
 import { PaillierPublicKey, PaillierSecretKey } from "../paillier.js";
-import { PedersenParameters } from "../pedersen.js";
+import { PedersenParams } from "../pedersen.js";
 import { Exponent } from "../polynomial/exponent.js";
 import { ZkSchRandomness } from "../zk/zksch.js";
 import { KeygenInputForRound1 } from "./KeygenRound1.js";
@@ -23,7 +23,7 @@ export type KeygenInputForRound2 = {
   selfShare: bigint,
   elGamalPublic: AffinePoint,
   selfPaillierPublic: PaillierPublicKey,
-  selfPedersenPublic: PedersenParameters,
+  selfPedersenPublic: PedersenParams,
   elGamalSecret: bigint,
   paillierSecret: PaillierSecretKey,
   pedersenSecret: bigint,

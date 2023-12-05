@@ -6,11 +6,11 @@ import { secp256k1 } from "@noble/curves/secp256k1";
 import { sampleIntervalL, sampleIntervalLprime } from "../sample.js";
 import {
   PaillierPublicKey, PaillierSecretKey,
-  paillierAdd, paillierEncrypt, paillierGeneratePedersen,
+  paillierAdd, paillierEncrypt, generatePedersen,
   paillierMultiply, paillierSecretKeyFromPrimes, validatePaillierPrime,
 } from "../paillier.js";
 import Fn from "../Fn.js";
-import { PedersenParameters } from "../pedersen.js";
+import { PedersenParams } from "../pedersen.js";
 import {
   ZkAffgPrivate, ZkAffgPublic,
   zkAffgCreateProof, zkAffgVerifyProof,
@@ -23,7 +23,7 @@ describe("zk/affg", () => {
     let proverPaillierPublicKey: PaillierPublicKey;
     let verifierPaillierSecretKey: PaillierSecretKey;
     let verifierPaillierPublicKey: PaillierPublicKey;
-    let verifierPedersen: PedersenParameters;
+    let verifierPedersen: PedersenParams;
 
     {
       const p = 167495246782569910107862669897619243075835098207853220101403982609959943903743345646375788362909715211900141652671436007095125366426921092792005772260273820630537327116191279465491203987638225198595642843240698088777581339844121640128731583440776342448939839731522446469995390448902946229002446098530004835239n;
@@ -41,7 +41,7 @@ describe("zk/affg", () => {
       await validatePaillierPrime(q);
       verifierPaillierSecretKey = paillierSecretKeyFromPrimes(p, q);
       verifierPaillierPublicKey = verifierPaillierSecretKey.publicKey;
-      const { pedersen } = paillierGeneratePedersen(verifierPaillierSecretKey);
+      const { pedersen } = generatePedersen(verifierPaillierSecretKey);
       verifierPedersen = pedersen;
     }
 

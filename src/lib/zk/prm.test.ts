@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  paillierGeneratePedersen, paillierSecretKeyFromPrimes, validatePaillierPrime,
+  generatePedersen, paillierSecretKeyFromPrimes, validatePaillierPrime,
 } from '../paillier.js';
 import { Hasher } from '../Hasher.js';
 import {
@@ -16,7 +16,7 @@ test('zk/prm', async () => {
   await validatePaillierPrime(p);
   await validatePaillierPrime(q);
   const paillierSecretKey = paillierSecretKeyFromPrimes(p, q);
-  const { pedersen, lambda } = paillierGeneratePedersen(paillierSecretKey);
+  const { pedersen, lambda } = generatePedersen(paillierSecretKey);
 
   const hasher = Hasher.create().update('test');
 
