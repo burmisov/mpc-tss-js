@@ -1,9 +1,12 @@
 {
-  "name": "mpc-tss-js",
+  "name": "mpc-tss",
   "type": "module",
   "version": "0.1.0",
   "description": "Multi-Party Computation Threshold Signature Scheme Implementation in Javascript",
-  "repository": "github:burmisov/mpc-tss-js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:burmisov/mpc-tss-js.git"
+  },
   "bugs": "https://github.com/burmisov/mpc-tss-js/issues",
   "keywords": [
     "mpc",
@@ -16,21 +19,21 @@
   "files": [
     "dist"
   ],
-  "main": "dist/cjs/mpc-tss-js.cjs",
-  "module": "dist/mpc-tss-js.js",
-  "types": "dist/rmpc-tss-js.d.ts",
+  "main": "dist/cjs/mpc-tss.cjs",
+  "module": "dist/mpc-tss.js",
+  "types": "dist/rmpc-tss.d.ts",
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "types": "./dist/mpc-tss-js.d.ts",
-      "import": "./dist/mpc-tss-js.js",
-      "default": "./dist/mpc-tss-js.cjs"
+      "types": "./dist/mpc-tss.d.ts",
+      "import": "./dist/mpc-tss.js",
+      "default": "./dist/mpc-tss.cjs"
     }
   },
   "scripts": {
     "test": "node --import tsx --test src/**/*.test.ts src/**/**/*.test.ts",
     "test:e2e": "node --import tsx --test src/test/e2e.ts",
-    "build": "tsup src/mpc-tss-js.ts --clean --dts --format esm,cjs"
+    "build": "tsup src/mpc-tss.ts --clean --dts --format esm,cjs"
   },
   "author": "Sergey Burmisov <sergey@burmisov.com> (https://burmisov.com)",
   "license": "Apache-2.0",
