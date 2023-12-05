@@ -4,10 +4,7 @@ import {
   SignMessageForRound2,
   SignPartyInputRound2,
 } from './SignerRound2.js';
-import {
-  PaillierPublicKey, PaillierSecretKey,
-  paillierEncrypt,
-} from "../paillier.js";
+import { PaillierPublicKey, PaillierSecretKey } from "../paillier.js";
 import { ZkEncPrivate, ZkEncPublic, zkEncCreateProof } from "../zk/enc.js";
 import { sampleScalarPointPair, sampleScalar } from "../sample.js";
 import { AffinePoint } from "../common.types.js";
@@ -45,16 +42,12 @@ export class SignerRound1 {
 
   public process(): SignPartyOutputRound1 {
     const [GammaShare, BigGammaShare] = sampleScalarPointPair();
-    const { ciphertext: G, nonce: GNonce } = paillierEncrypt(
-      this.roundInput.partiesPublic[this.session.selfId].paillier,
-      GammaShare,
-    );
+    const { ciphertext: G, nonce: GNonce } =
+      this.roundInput.partiesPublic[this.session.selfId].paillier.encrypt(GammaShare);
 
     const KShare = sampleScalar();
-    const { ciphertext: K, nonce: KNonce } = paillierEncrypt(
-      this.roundInput.partiesPublic[this.session.selfId].paillier,
-      KShare,
-    );
+    const { ciphertext: K, nonce: KNonce } =
+      this.roundInput.partiesPublic[this.session.selfId].paillier.encrypt(KShare);
 
     const broadcast: SignBroadcastForRound2 = {
       from: this.session.selfId,

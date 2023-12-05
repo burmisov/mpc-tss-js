@@ -4,11 +4,8 @@ import assert from "node:assert/strict";
 import { secp256k1 } from "@noble/curves/secp256k1";
 import { randBetween } from "bigint-crypto-utils";
 
-import {
-  PaillierPublicKey, PaillierSecretKey,
-  generatePedersen, paillierDecrypt, paillierEncrypt,
-  paillierSecretKeyFromPrimes, validatePaillierPrime,
-} from "./paillier.js";
+import { PaillierPublicKey, PaillierSecretKey } from "./paillier.js";
+import { validatePaillierPrime } from './paillierKeygen.js';
 import { PedersenParams } from "./pedersen.js";
 import Fn from "./Fn.js";
 import { mtaProveAffG, mtaProveAffP } from "./mta.js";
@@ -28,7 +25,7 @@ describe('mta', async () => {
     const q = 178784929586423449637890491161861655617854412540709400421874212815293580828404739498291345696103341491924297140261396221041987821086550770172144419152711267591283272834659746554330603868249176073673884285246036132552905332762099384955889000396765335249879642433930458968871576233738650973235318810378637560383n;
     await validatePaillierPrime(p);
     await validatePaillierPrime(q);
-    proverPaillierSecretKey = paillierSecretKeyFromPrimes(p, q);
+    proverPaillierSecretKey = PaillierSecretKey.fromPrimes(p, q);
     proverPaillierPublicKey = proverPaillierSecretKey.publicKey;
   }
 
@@ -37,9 +34,9 @@ describe('mta', async () => {
     const q = 144651337722999591357894368476987413731327694772730408677878934803626218325763401733049627551150267745019646164141178748986827450041894571742897062718616997949877925740444144291875968298065299373438319317040746398994377200405476019627025944607850551945311780131978961657839712750089596117856255513589953855963n;
     await validatePaillierPrime(p);
     await validatePaillierPrime(q);
-    verifierPaillierSecretKey = paillierSecretKeyFromPrimes(p, q);
+    verifierPaillierSecretKey = PaillierSecretKey.fromPrimes(p, q);
     verifierPaillierPublicKey = verifierPaillierSecretKey.publicKey;
-    const { pedersen } = generatePedersen(verifierPaillierSecretKey);
+    const { pedersen } = verifierPaillierSecretKey.generatePedersen();
     verifierPedersen = pedersen;
   }
 
@@ -54,8 +51,8 @@ describe('mta', async () => {
   const bi = randBetween(Fn.N - 1n);
   const bj = randBetween(Fn.N - 1n);
 
-  const { ciphertext: Bi } = paillierEncrypt(paillierI, bi);
-  const { ciphertext: Bj } = paillierEncrypt(paillierJ, bj);
+  const { ciphertext: Bi } = paillierI.encrypt(bi);
+  const { ciphertext: Bj } = paillierJ.encrypt(bj);
 
   const aibj = Fn.mul(ai, bj);
   const ajbi = Fn.mul(aj, bi);
@@ -67,8 +64,8 @@ describe('mta', async () => {
     betaI: bigint,
     betaJ: bigint,
   ) => {
-    const alphaI = paillierDecrypt(ski, Dj);
-    const alphaJ = paillierDecrypt(skj, Di);
+    const alphaI = ski.decrypt(Dj);
+    const alphaJ = skj.decrypt(Di);
 
     const gammaI = alphaI + betaI;
     const gammaJ = alphaJ + betaJ;
@@ -125,8 +122,8 @@ describe('mta', async () => {
   it('proves AffP', () => {
     const hasher = Hasher.create().update('test');
 
-    const { ciphertext: Ai, nonce: nonceI } = paillierEncrypt(ski.publicKey, ai);
-    const { ciphertext: Aj, nonce: nonceJ } = paillierEncrypt(skj.publicKey, aj);
+    const { ciphertext: Ai, nonce: nonceI } = ski.publicKey.encrypt(ai);
+    const { ciphertext: Aj, nonce: nonceJ } = skj.publicKey.encrypt(aj);
     const {
       Beta: betaI, D: Di, F: Fi, proof: proofI,
     } = mtaProveAffP(

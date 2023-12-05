@@ -1,9 +1,8 @@
 import { Hasher } from "../Hasher.js";
 import { AffinePoint } from "../common.types.js";
 import { PartyId, partyIdToScalar } from "../keyConfig.js";
-import {
-  PaillierPublicKey, paillierEncrypt, paillierPublicKeyFromN, paillierValidateN,
-} from "../paillier.js";
+import { PaillierPublicKey } from "../paillier.js";
+import { paillierValidateN } from '../paillierKeygen.js';
 import { PedersenParams } from "../pedersen.js";
 import { Exponent } from "../polynomial/exponent.js";
 import { ZkFacPrivate, ZkFacPublic, zkFacCreateProof } from "../zk/fac.js";
@@ -90,7 +89,7 @@ export class KeygenRound3 {
 
     this.RIDs[from] = bmsg.RID;
     this.ChainKeys[from] = bmsg.C;
-    this.PaillierPublic[from] = paillierPublicKeyFromN(bmsg.pedersenPublic.n);
+    this.PaillierPublic[from] = PaillierPublicKey.fromN(bmsg.pedersenPublic.n);
     this.Pedersen[from] = bmsg.pedersenPublic;
     this.vssPolynomials[from] = vssPolynomial;
     this.SchnorrCommitments[from] = bmsg.schnorrCommitment;
@@ -160,7 +159,7 @@ export class KeygenRound3 {
 
       const { vssSecret } = this.inputForRound3.inputForRound2.inputRound1;
       const share = vssSecret.evaluate(partyIdToScalar(j));
-      const { ciphertext: C } = paillierEncrypt(this.PaillierPublic[j], share);
+      const { ciphertext: C } = this.PaillierPublic[j].encrypt(share);
 
       directMessages.push({
         from: this.session.selfId,

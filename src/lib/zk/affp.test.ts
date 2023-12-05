@@ -2,9 +2,9 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  PaillierPublicKey, PaillierSecretKey, generatePedersen, paillierAdd, paillierEncrypt,
-  paillierMultiply, paillierSecretKeyFromPrimes, validatePaillierPrime,
+  PaillierPublicKey, PaillierSecretKey, paillierAdd, paillierMultiply,
 } from "../paillier.js";
+import { validatePaillierPrime } from '../paillierKeygen.js';
 import { PedersenParams } from "../pedersen.js";
 import { sampleIntervalL } from "../sample.js";
 import {
@@ -25,7 +25,7 @@ describe("zk/affp", () => {
       const q = 178784929586423449637890491161861655617854412540709400421874212815293580828404739498291345696103341491924297140261396221041987821086550770172144419152711267591283272834659746554330603868249176073673884285246036132552905332762099384955889000396765335249879642433930458968871576233738650973235318810378637560383n;
       await validatePaillierPrime(p);
       await validatePaillierPrime(q);
-      proverPaillierSecretKey = paillierSecretKeyFromPrimes(p, q);
+      proverPaillierSecretKey = PaillierSecretKey.fromPrimes(p, q);
       proverPaillierPublicKey = proverPaillierSecretKey.publicKey;
     }
 
@@ -34,29 +34,23 @@ describe("zk/affp", () => {
       const q = 144651337722999591357894368476987413731327694772730408677878934803626218325763401733049627551150267745019646164141178748986827450041894571742897062718616997949877925740444144291875968298065299373438319317040746398994377200405476019627025944607850551945311780131978961657839712750089596117856255513589953855963n;
       await validatePaillierPrime(p);
       await validatePaillierPrime(q);
-      verifierPaillierSecretKey = paillierSecretKeyFromPrimes(p, q);
+      verifierPaillierSecretKey = PaillierSecretKey.fromPrimes(p, q);
       verifierPaillierPublicKey = verifierPaillierSecretKey.publicKey;
-      const { pedersen } = generatePedersen(verifierPaillierSecretKey);
+      const { pedersen } = verifierPaillierSecretKey.generatePedersen();
       verifierPedersen = pedersen;
     }
 
     const c = 12n;
-    const { ciphertext: C } = paillierEncrypt(verifierPaillierPublicKey, c);
+    const { ciphertext: C } = verifierPaillierPublicKey.encrypt(c);
 
     const x = sampleIntervalL();
-    const { ciphertext: X, nonce: rhoX } = paillierEncrypt(
-      proverPaillierPublicKey, x,
-    );
+    const { ciphertext: X, nonce: rhoX } = proverPaillierPublicKey.encrypt(x);
 
     const y = sampleIntervalL();
-    const { ciphertext: Y, nonce: rhoY } = paillierEncrypt(
-      proverPaillierPublicKey, y,
-    );
+    const { ciphertext: Y, nonce: rhoY } = proverPaillierPublicKey.encrypt(y);
 
     const tmp = paillierMultiply(verifierPaillierPublicKey, C, x);
-    const { ciphertext: D_, nonce: rho } = paillierEncrypt(
-      verifierPaillierPublicKey, y,
-    );
+    const { ciphertext: D_, nonce: rho } = verifierPaillierPublicKey.encrypt(y);
     const D = paillierAdd(verifierPaillierPublicKey, D_, tmp);
 
     const pub: ZkAffpPublic = {

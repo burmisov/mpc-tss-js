@@ -8,7 +8,6 @@ import {
 } from "../zk/logstar.js";
 import { isIdentity } from "../curve.js";
 import { SignPartyInputRound2 } from "./SignerRound2.js";
-import { paillierDecrypt } from "../paillier.js";
 import Fn from "../Fn.js";
 import {
   SignBroadcastForRound4, SignInputForRound4, SignMessageForRound4,
@@ -125,14 +124,10 @@ export class SignerRound3 {
 
     // Store the verified values (TODO: split into separate function?)
     // TODO: handle decryption errors locally
-    const DeltaShareAlpha = paillierDecrypt(
-      this.roundInput.inputForRound2.inputForRound1.secretPaillier,
-      msg.DeltaD,
-    );
-    const ChiShareAlpha = paillierDecrypt(
-      this.roundInput.inputForRound2.inputForRound1.secretPaillier,
-      msg.ChiD,
-    );
+    const DeltaShareAlpha =
+      this.roundInput.inputForRound2.inputForRound1.secretPaillier.decrypt(msg.DeltaD);
+    const ChiShareAlpha =
+      this.roundInput.inputForRound2.inputForRound1.secretPaillier.decrypt(msg.ChiD);
     this.DeltaShareAlpha[msg.from] = DeltaShareAlpha;
     this.ChiShareAlpha[msg.from] = ChiShareAlpha;
   }

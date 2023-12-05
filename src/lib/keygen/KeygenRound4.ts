@@ -4,7 +4,7 @@ import Fn from "../Fn.js";
 import {
   PartyId, PartyPublicKeyConfig, PartySecretKeyConfig, partyIdToScalar,
 } from "../keyConfig.js";
-import { PaillierPublicKey, paillierDecrypt, validateCiphertext } from "../paillier.js";
+import { PaillierPublicKey } from "../paillier.js";
 import { PedersenParams } from "../pedersen.js";
 import { Exponent } from "../polynomial/exponent.js";
 import { ZkFacProof, ZkFacPublic, zkFacVerifyProof } from "../zk/fac.js";
@@ -83,7 +83,7 @@ export class KeygenRound4 {
       throw new Error(`received direct message for ${to} but I am ${this.session.selfId}`);
     }
 
-    if (!validateCiphertext(this.input.PaillierPublic[to], share)) {
+    if (!this.input.PaillierPublic[to].validateCiphertext(share)) {
       throw new Error(`invalid ciphertext from ${from}`);
     }
 
@@ -99,8 +99,8 @@ export class KeygenRound4 {
     }
 
     // store
-    const DecryptedShare = paillierDecrypt(
-      this.input.inputForRound3.inputForRound2.paillierSecret, share,
+    const DecryptedShare = this.input.inputForRound3.inputForRound2.paillierSecret.decrypt(
+      share,
     );
     const Share = Fn.mod(DecryptedShare);
     if (Share !== DecryptedShare) {

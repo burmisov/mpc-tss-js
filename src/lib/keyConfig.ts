@@ -1,11 +1,8 @@
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { AffinePoint, AffinePointSerialized } from './common.types.js';
 import {
-  PaillierPublicKey, PaillierPublicKeySerialized, PaillierSecretKey,
-  PaillierSecretKeySerialized, paillierPublicKeyFromSerialized,
-  paillierPublicKeyToSerialized,
-  paillierSecretKeyFromSerialized,
-  paillierSecretKeyToSerialized,
+  PaillierPublicKey, PaillierPublicKeyJSON,
+  PaillierSecretKey, PaillierSecretKeyJSON,
 } from './paillier.js';
 import { PedersenParametersJSON, PedersenParams } from './pedersen.js';
 import { lagrange } from './polynomial/lagrange.js';
@@ -26,7 +23,7 @@ export type PartyPublicKeyConfigSerialized = {
   partyId: string,
   ecdsa: AffinePointSerialized
   elgamal: AffinePointSerialized,
-  paillier: PaillierPublicKeySerialized,
+  paillier: PaillierPublicKeyJSON,
   pedersen: PedersenParametersJSON,
 };
 
@@ -43,7 +40,7 @@ const deserializePartyPublicKeyConfig = (
       x: BigInt('0x' + serialized.elgamal.xHex),
       y: BigInt('0x' + serialized.elgamal.yHex),
     },
-    paillier: paillierPublicKeyFromSerialized(serialized.paillier),
+    paillier: PaillierPublicKey.fromJSON(serialized.paillier),
     pedersen: PedersenParams.fromJSON(serialized.pedersen),
   };
 }
@@ -61,7 +58,7 @@ const serializePartyPublicKeyConfig = (
       xHex: config.elgamal.x.toString(16),
       yHex: config.elgamal.y.toString(16),
     },
-    paillier: paillierPublicKeyToSerialized(config.paillier),
+    paillier: config.paillier.toJSON(),
     pedersen: config.pedersen.toJSON(),
   };
 }
@@ -84,7 +81,7 @@ export type PartySecretKeyConfigSerialized = {
   threshold: number,
   ecdsaHex: string,
   elgamalHex: string,
-  paillier: PaillierSecretKeySerialized,
+  paillier: PaillierSecretKeyJSON,
   ridHex: string, // TODO
   chainKeyHex: string, // TODO
   publicPartyData: Record<string, PartyPublicKeyConfigSerialized>,
@@ -106,7 +103,7 @@ export const deserializePartySecretKeyConfig = (
     threshold: serialized.threshold,
     ecdsa: BigInt('0x' + serialized.ecdsaHex),
     elgamal: BigInt('0x' + serialized.elgamalHex),
-    paillier: paillierSecretKeyFromSerialized(serialized.paillier),
+    paillier: PaillierSecretKey.fromJSON(serialized.paillier),
     rid: BigInt('0x' + serialized.ridHex),
     chainKey: BigInt('0x' + serialized.chainKeyHex),
     publicPartyData,
@@ -129,7 +126,7 @@ export const serializePartySecretKeyConfig = (
     threshold: config.threshold,
     ecdsaHex: config.ecdsa.toString(16),
     elgamalHex: config.elgamal.toString(16),
-    paillier: paillierSecretKeyToSerialized(config.paillier),
+    paillier: config.paillier.toJSON(),
     ridHex: config.rid.toString(16),
     chainKeyHex: config.chainKey.toString(16),
     publicPartyData,

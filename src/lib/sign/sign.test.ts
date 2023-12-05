@@ -9,8 +9,8 @@ import {
   PartySecretKeyConfigSerialized, deserializePartySecretKeyConfig, getPublicPoint,
 } from "../keyConfig.js";
 import {
-  PaillierPublicKeySerialized, PaillierSecretKeySerialized,
-  paillierPublicKeyFromSerialized, paillierSecretKeyFromSerialized,
+  PaillierPublicKeyJSON, PaillierSecretKeyJSON,
+  PaillierPublicKey, PaillierSecretKey,
 } from '../paillier.js';
 import { PedersenParametersJSON, PedersenParams } from '../pedersen.js';
 import { SignRequestSerialized, deserializeSignRequest } from './sign.js';
@@ -153,13 +153,13 @@ describe('sign 3/3 (all parties)', () => {
   const signRequest = deserializeSignRequest(signRequestSerialized);
 
   const checkPaillierFixture = (
-    publicSerialized: PaillierPublicKeySerialized,
-    privateSerialized: PaillierSecretKeySerialized,
+    publicSerialized: PaillierPublicKeyJSON,
+    privateSerialized: PaillierSecretKeyJSON,
   ) => {
-    const pub = paillierPublicKeyFromSerialized(publicSerialized);
-    const secret = paillierSecretKeyFromSerialized(privateSerialized);
-    assert.deepStrictEqual(
-      pub, secret.publicKey, 'public key does not match secret key',
+    const pub = PaillierPublicKey.fromJSON(publicSerialized);
+    const secret = PaillierSecretKey.fromJSON(privateSerialized);
+    assert.equal(
+      pub.n, secret.publicKey.n, 'public key does not match secret key',
     );
   }
 

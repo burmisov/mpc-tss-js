@@ -6,10 +6,8 @@ import {
   zkEncCreateProof, zkEncVerifyProof,
 } from "./enc.js";
 import { sampleIntervalL } from "../sample.js";
-import {
-  paillierEncrypt, generatePedersen,
-  paillierSecretKeyFromPrimes, validatePaillierPrime,
-} from "../paillier.js";
+import { PaillierSecretKey } from "../paillier.js";
+import { validatePaillierPrime } from '../paillierKeygen.js';
 import { Hasher } from "../Hasher.js";
 
 
@@ -21,12 +19,12 @@ describe("zk/enc", () => {
     const q = 144651337722999591357894368476987413731327694772730408677878934803626218325763401733049627551150267745019646164141178748986827450041894571742897062718616997949877925740444144291875968298065299373438319317040746398994377200405476019627025944607850551945311780131978961657839712750089596117856255513589953855963n;
     await validatePaillierPrime(p);
     await validatePaillierPrime(q);
-    const paillierSecretKey = paillierSecretKeyFromPrimes(p, q);
+    const paillierSecretKey = PaillierSecretKey.fromPrimes(p, q);
     const paillierPublicKey = paillierSecretKey.publicKey;
 
-    const { pedersen } = generatePedersen(paillierSecretKey);
+    const { pedersen } = paillierSecretKey.generatePedersen();
 
-    const { ciphertext: K, nonce: rho } = paillierEncrypt(paillierPublicKey, k);
+    const { ciphertext: K, nonce: rho } = paillierPublicKey.encrypt(k);
 
     const zkEncPublic: ZkEncPublic = {
       K, prover: paillierPublicKey, aux: pedersen,

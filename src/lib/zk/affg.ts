@@ -3,11 +3,7 @@ import { modMultiply, modPow } from "bigint-crypto-utils";
 
 import { isInIntervalLeps, isInIntervalLprimeEps, isValidModN } from "../arith.js";
 import { AffinePoint } from "../common.types.js";
-import {
-  PaillierPublicKey,
-  paillierAdd, paillierEncryptWithNonce, paillierMultiply,
-  validateCiphertext
-} from "../paillier.js";
+import { PaillierPublicKey, paillierAdd, paillierMultiply } from "../paillier.js";
 import { PedersenParams } from "../pedersen.js";
 import {
   sampleIntervalLN, sampleIntervalLeps, sampleIntervalLepsN,
@@ -16,7 +12,6 @@ import {
 import Fn from "../Fn.js";
 import { Hasher } from "../Hasher.js";
 import { isIdentity } from "../curve.js";
-
 
 export type ZkAffgPublic = {
   Kv: bigint; // ciphertext
@@ -60,8 +55,8 @@ export const zkAffgIsProofValid = (
   pub: ZkAffgPublic,
 ): boolean => {
   if (!proof) { return false; }
-  if (!validateCiphertext(pub.verifier, proof.commitment.A)) { return false; }
-  if (!validateCiphertext(pub.prover, proof.commitment.By)) { return false; }
+  if (!pub.verifier.validateCiphertext(proof.commitment.A)) { return false; }
+  if (!pub.prover.validateCiphertext(proof.commitment.By)) { return false; }
   if (!isValidModN(pub.prover.n, proof.Wy)) { return false; }
   if (!isValidModN(pub.verifier.n, proof.W)) { return false; }
 
@@ -93,7 +88,7 @@ export const zkAffgCreateProof = (
   const cAlpha = paillierMultiply(pub.verifier, pub.Kv, alpha);
   const A = paillierAdd(
     pub.verifier,
-    paillierEncryptWithNonce(pub.verifier, beta, rho),
+    pub.verifier.encryptWithNonce(beta, rho),
     cAlpha,
   );
 
@@ -103,7 +98,7 @@ export const zkAffgCreateProof = (
   const T = pub.aux.commit(priv.Y, mu);
 
   const Bx = secp256k1.ProjectivePoint.BASE.multiply(Fn.mod(alpha)).toAffine();
-  const By = paillierEncryptWithNonce(pub.prover, beta, rhoY);
+  const By = pub.prover.encryptWithNonce(beta, rhoY);
 
   const commitment: ZkAffgCommitment = { A, Bx, By, E, S, F, T };
 
@@ -155,7 +150,7 @@ export const zkAffgVerifyProof = (
   {
     const lhs = paillierAdd(
       pub.verifier,
-      paillierEncryptWithNonce(pub.verifier, proof.Z2, proof.W),
+      pub.verifier.encryptWithNonce(proof.Z2, proof.W),
       paillierMultiply(pub.verifier, pub.Kv, proof.Z1),
     );
     const rhs = paillierAdd(
@@ -179,7 +174,7 @@ export const zkAffgVerifyProof = (
   }
 
   {
-    const lhs = paillierEncryptWithNonce(pub.prover, proof.Z2, proof.Wy);
+    const lhs = pub.prover.encryptWithNonce(proof.Z2, proof.Wy);
     const rhs = paillierAdd(
       pub.prover,
       paillierMultiply(pub.prover, pub.Fp, e),

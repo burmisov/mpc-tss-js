@@ -1,8 +1,7 @@
 import { Hasher } from "./Hasher.js";
 import { AffinePoint } from "./common.types.js";
 import {
-  PaillierPublicKey, PaillierSecretKey,
-  paillierAdd, paillierEncrypt, paillierMultiply,
+  PaillierPublicKey, PaillierSecretKey, paillierAdd, paillierMultiply,
 } from "./paillier.js";
 import { PedersenParams } from "./pedersen.js";
 import { sampleIntervalLprime } from "./sample.js";
@@ -109,9 +108,9 @@ export const mtaNew = (
 } => {
   const BetaNeg = sampleIntervalLprime();
 
-  const { ciphertext: F, nonce: R } = paillierEncrypt(sender.publicKey, BetaNeg);
+  const { ciphertext: F, nonce: R } = sender.publicKey.encrypt(BetaNeg);
 
-  const { ciphertext: D_, nonce: S } = paillierEncrypt(receiver, BetaNeg);
+  const { ciphertext: D_, nonce: S } = receiver.encrypt(BetaNeg);
   const D = paillierAdd(
     receiver,
     D_,

@@ -3,129 +3,169 @@
 // TODO: Optimize using known values of p and q
 
 import {
-  modInv, bitLength, gcd, abs, modPow, modMultiply,
-  isProbablyPrime, randBytesSync, phi, randBetween,
+  modInv, gcd, abs, modPow, modMultiply,
+  randBetween,
 } from 'bigint-crypto-utils';
 
 import { sampleUnitModN } from './sample.js';
 import { PedersenParams } from './pedersen.js';
+import { JSONable } from './serde.js';
+import { Hashable, IngestableBasic } from './Hasher.js';
 
-export type PaillierSecretKey = {
-  p: bigint;
-  q: bigint;
-  phi: bigint;
-  phiInv: bigint;
-  publicKey: PaillierPublicKey;
-}
-
-export type PaillierPublicKey = {
-  n: bigint;
-  nSquared: bigint;
-  nPlusOne: bigint;
-}
-
-export type PaillierSecretKeySerialized = {
+export type PaillierSecretKeyJSON = {
   pHex: string;
   qHex: string;
 };
 
-export type PaillierPublicKeySerialized = {
+export type PaillierPublicKeyJSON = {
   nHex: string;
 };
 
-export const paillierSecretKeyFromSerialized = (
-  secretKeySerialized: PaillierSecretKeySerialized
-): PaillierSecretKey => {
-  const p = BigInt('0x' + secretKeySerialized.pHex);
-  const q = BigInt('0x' + secretKeySerialized.qHex);
-  return paillierSecretKeyFromPrimes(p, q);
+export class PaillierSecretKey implements JSONable {
+  private _p: bigint;
+  private _q: bigint;
+  private _phi: bigint;
+  private _phiInv: bigint;
+  public publicKey: PaillierPublicKey;
+
+  private constructor(
+    p: bigint,
+    q: bigint,
+    phi: bigint,
+    phiInv: bigint,
+    publicKey: PaillierPublicKey,
+  ) {
+    this._p = p;
+    this._q = q;
+    this._phi = phi;
+    this._phiInv = phiInv;
+    this.publicKey = publicKey;
+  }
+
+  public get p(): bigint { return this._p; }
+  public get q(): bigint { return this._q; }
+  public get phi(): bigint { return this._phi; }
+
+  public toJSON(): PaillierSecretKeyJSON {
+    return {
+      pHex: this._p.toString(16),
+      qHex: this._q.toString(16),
+    };
+  }
+
+  public static fromJSON(secretKeyJson: PaillierSecretKeyJSON): PaillierSecretKey {
+    const p = BigInt('0x' + secretKeyJson.pHex);
+    const q = BigInt('0x' + secretKeyJson.qHex);
+    return PaillierSecretKey.fromPrimes(p, q);
+  }
+
+  public static fromPrimes = (p: bigint, q: bigint): PaillierSecretKey => {
+    const n = p * q;
+    const phi = (p - 1n) * (q - 1n);
+    const phiInv = modInv(phi, n);
+    const publicKey: PaillierPublicKey = PaillierPublicKey.fromN(n);
+    const paillierSecretKey = new PaillierSecretKey(p, q, phi, phiInv, publicKey);
+    Object.freeze(paillierSecretKey);
+    return paillierSecretKey;
+  }
+
+  public decrypt(ciphertext: bigint): bigint {
+    if (!this.publicKey.validateCiphertext(ciphertext)) {
+      throw new Error('INVALID_CIPHERTEXT');
+    }
+
+    const { nSquared } = this.publicKey;
+
+    const c1 = modPow(ciphertext, this._phi, nSquared);
+    const c2 = c1 - 1n;
+    const c3 = c2 / this.publicKey.n;
+    const c4 = modMultiply([c3, this._phiInv], this.publicKey.n);
+    const message = modSymmetric(c4, this.publicKey.n);
+
+    return message;
+  }
+
+  public generatePedersen(): {
+    pedersen: PedersenParams,
+    lambda: bigint,
+  } {
+    const { s, t, lambda } = samplePedersen(this._phi, this.publicKey.n);
+    const pedersen = PedersenParams.from(this.publicKey.n, s, t);
+    return { pedersen, lambda };
+  }
 }
 
-export const paillierSecretKeyToSerialized = (
-  secretKey: PaillierSecretKey
-): PaillierSecretKeySerialized => {
-  return {
-    pHex: secretKey.p.toString(16),
-    qHex: secretKey.q.toString(16),
-  };
+export class PaillierPublicKey implements Hashable, JSONable {
+  private _n: bigint;
+  private _nSquared: bigint;
+  private _nPlusOne: bigint;
+
+  private constructor(n: bigint, nSquared: bigint, nPlusOne: bigint) {
+    this._n = n;
+    this._nSquared = nSquared;
+    this._nPlusOne = nPlusOne;
+  }
+
+  public get n(): bigint { return this._n; }
+  public get nSquared(): bigint { return this._nSquared; }
+  public get nPlusOne(): bigint { return this._nPlusOne; }
+
+  public toJSON(): PaillierPublicKeyJSON {
+    return {
+      nHex: this._n.toString(16),
+    };
+  }
+
+  public static fromJSON(publicKeyJson: PaillierPublicKeyJSON): PaillierPublicKey {
+    const n = BigInt('0x' + publicKeyJson.nHex);
+    return PaillierPublicKey.fromN(n);
+  }
+
+  public hashable(): Array<IngestableBasic> {
+    return [this.n, this.nSquared, this.nPlusOne];
+  }
+
+  public static fromN(n: bigint): PaillierPublicKey {
+    const nSquared = n * n;
+    const nPlusOne = n + 1n;
+    const ppk = new PaillierPublicKey(n, nSquared, nPlusOne);
+    Object.freeze(ppk);
+    return ppk;
+  }
+
+  public encryptWithNonce(message: bigint, nonce: bigint): bigint {
+    const messageAbs = abs(message);
+    const nHalf = this.n / 2n;
+    if (messageAbs > nHalf) {
+      throw new Error('MESSAGE_TOO_LARGE');
+    }
+
+    const c = modPow(this.nPlusOne, message, this.nSquared);
+    const rhoN = modPow(nonce, this.n, this.nSquared);
+    const ciphertext = modMultiply([c, rhoN], this.nSquared);
+
+    return ciphertext;
+  }
+
+  public encrypt(message: bigint): { ciphertext: bigint, nonce: bigint } {
+    const nonce = generateRandomNonce(this.n);
+    const ciphertext = this.encryptWithNonce(message, nonce);
+    return { ciphertext, nonce };
+  }
+
+  validateCiphertext = (ciphertext: bigint): boolean => {
+    if (!(ciphertext < this.nSquared)) {
+      return false;
+    }
+    if (gcd(ciphertext, this.nSquared) !== 1n) {
+      return false;
+    };
+    return true;
+  }
 }
 
-export const paillierPublicKeyFromN = (n: bigint): PaillierPublicKey => {
-  const nSquared = n * n;
-  const nPlusOne = n + 1n;
-  return { n, nSquared, nPlusOne };
-};
-
-export const paillierPublicKeyFromSerialized = (
-  publicKeySerialized: PaillierPublicKeySerialized
-): PaillierPublicKey => {
-  const n = BigInt('0x' + publicKeySerialized.nHex);
-  return paillierPublicKeyFromN(n);
-}
-
-export const paillierPublicKeyToSerialized = (
-  publicKey: PaillierPublicKey
-): PaillierPublicKeySerialized => {
-  return {
-    nHex: publicKey.n.toString(16),
-  };
-}
-
-export const paillierSecretKeyFromPrimes = (p: bigint, q: bigint): PaillierSecretKey => {
-  const n = p * q;
-  const nSquared = n * n;
-  const nPlusOne = n + 1n;
-  const phi = (p - 1n) * (q - 1n);
-  const phiInv = modInv(phi, n);
-  const publicKey: PaillierPublicKey = { n, nSquared, nPlusOne };
-  const paillierSecretKey: PaillierSecretKey = { p, q, phi, phiInv, publicKey };
-  return paillierSecretKey;
-}
-
-export const generateRandomNonce = (modulus: bigint): bigint => {
+const generateRandomNonce = (modulus: bigint): bigint => {
   return sampleUnitModN(modulus);
-}
-
-export const paillierEncrypt = (
-  publicKey: PaillierPublicKey,
-  message: bigint
-): { ciphertext: bigint, nonce: bigint } => {
-  const nonce = generateRandomNonce(publicKey.n);
-  const ciphertext = paillierEncryptWithNonce(
-    publicKey, message, nonce
-  );
-  return { ciphertext, nonce };
-}
-
-export const paillierEncryptWithNonce = (
-  publicKey: PaillierPublicKey,
-  message: bigint,
-  nonce: bigint,
-): bigint => {
-  const messageAbs = abs(message);
-  const nHalf = publicKey.n / 2n;
-  if (messageAbs > nHalf) {
-    throw new Error('MESSAGE_TOO_LARGE');
-  }
-
-  const c = modPow(publicKey.nPlusOne, message, publicKey.nSquared);
-  const rhoN = modPow(nonce, publicKey.n, publicKey.nSquared);
-  const ciphertext = modMultiply([c, rhoN], publicKey.nSquared);
-
-  return ciphertext;
-}
-
-export const validateCiphertext = (
-  publicKey: PaillierPublicKey,
-  ciphertext: bigint
-): boolean => {
-  if (!(ciphertext < publicKey.nSquared)) {
-    return false;
-  }
-  if (gcd(ciphertext, publicKey.nSquared) !== 1n) {
-    return false;
-  };
-  return true;
 }
 
 const modSymmetric = (x: bigint, n: bigint): bigint => {
@@ -136,25 +176,6 @@ const modSymmetric = (x: bigint, n: bigint): bigint => {
   } else {
     return absMod;
   }
-}
-
-export const paillierDecrypt = (
-  secretKey: PaillierSecretKey,
-  ciphertext: bigint,
-): bigint => {
-  if (!validateCiphertext(secretKey.publicKey, ciphertext)) {
-    throw new Error('INVALID_CIPHERTEXT');
-  }
-
-  const { nSquared } = secretKey.publicKey;
-
-  const c1 = modPow(ciphertext, secretKey.phi, nSquared);
-  const c2 = c1 - 1n;
-  const c3 = c2 / secretKey.publicKey.n;
-  const c4 = modMultiply([c3, secretKey.phiInv], secretKey.publicKey.n);
-  const message = modSymmetric(c4, secretKey.publicKey.n);
-
-  return message;
 }
 
 export const paillierAdd = (
@@ -179,17 +200,6 @@ export const paillierMultiply = (
   return ciphertextProduct;
 }
 
-export const generatePedersen = (
-  secretKey: PaillierSecretKey,
-): {
-  pedersen: PedersenParams,
-  lambda: bigint,
-} => {
-  const { s, t, lambda } = samplePedersen(secretKey.phi, secretKey.publicKey.n);
-  const pedersen = PedersenParams.from(secretKey.publicKey.n, s, t);
-  return { pedersen, lambda };
-}
-
 const samplePedersen = (phi: bigint, n: bigint): {
   s: bigint,
   t: bigint,
@@ -201,135 +211,3 @@ const samplePedersen = (phi: bigint, n: bigint): {
   const s = modPow(t, lambda, n);
   return { s, t, lambda };
 }
-
-const SEC_PARAM = 256;
-const BITS_BLUM_PRIME = 4 * SEC_PARAM;
-const BITS_PAILLIER = 2 * BITS_BLUM_PRIME;
-const SIEVE_SIZE = 2 ** 18;
-const PRIME_BOUND = 2 ** 20;
-const BLUM_PRIMALITY_ITERATIONS = 20;
-
-const primes = (below: number): bigint[] => {
-  const sieve = new Uint8Array(below).fill(1);
-  sieve[0] = 0; sieve[1] = 0;
-  for (let p = 2; p * p < sieve.length; p++) {
-    if (sieve[p] === 0) { continue }
-    for (let i = p * 2; i < sieve.length; i += p) {
-      sieve[i] = 0;
-    }
-  }
-  const result = [];
-  for (let p = 3; p < below; p += 1) {
-    if (sieve[p] === 1) {
-      result.push(BigInt(p));
-    }
-  }
-  return result;
-}
-
-const PRIMES = primes(PRIME_BOUND);
-
-const tryBlumPrime = async (): Promise<bigint | null> => {
-  const randomByteLength = Math.floor((BITS_BLUM_PRIME + 7) / 8);
-  const bytes = randBytesSync(randomByteLength);
-
-  bytes[bytes.length - 1] |= 3;
-  bytes[0] |= 0xC0;
-
-  const base = BigInt('0x' + bytes.toString('hex'));
-
-  const sieve = new Uint8Array(SIEVE_SIZE).fill(1);
-
-  // Remove candidates that are not 3 mod 4
-  for (let i = 1; i + 2 < sieve.length; i += 4) {
-    sieve[i] = 0;
-    sieve[i + 1] = 0;
-    sieve[i + 2] = 0;
-  }
-
-  let remainder = 0n;
-  for (let p = 0; p < PRIMES.length; p += 1) {
-    const prime = PRIMES[p];
-    remainder = prime;
-    remainder = base % remainder;
-    let firstMultiple = prime - remainder;
-    if (remainder === 0n) {
-      firstMultiple = 0n;
-    }
-    for (
-      let i = Number(firstMultiple);
-      i < sieve.length;
-      i += Number(prime)
-    ) {
-      sieve[i] = 0;
-      sieve[i + 1] = 0;
-    }
-  }
-
-  let p: bigint | undefined = undefined;
-  let q = 0n;
-  for (let delta = 0; delta < sieve.length; delta += 1) {
-    if (sieve[delta] === 0) { continue }
-    p = BigInt(delta);
-    p = p + base;
-    if (bitLength(p) > BITS_BLUM_PRIME) {
-      return null;
-    }
-    q = (p - 1n) / 2n;
-    if (!(await isProbablyPrime(q, BLUM_PRIMALITY_ITERATIONS))) {
-      continue;
-    }
-    if (!(await isProbablyPrime(p, 1))) {
-      continue;
-    }
-    return p;
-  }
-
-  return null;
-}
-
-export const randomPaillierPrimes = async (): Promise<{ p: bigint, q: bigint }> => {
-  let p: bigint | undefined = undefined;
-  let q: bigint;
-
-  while (true) {
-    let x = await tryBlumPrime();
-
-    if (x === null) { continue }
-
-    if (p === undefined) {
-      p = x;
-    } else {
-      q = x;
-      return { p, q };
-    }
-  }
-}
-
-export const validatePaillierPrime = async (p: bigint): Promise<void> => {
-  const primeBitLength = bitLength(p);
-  if (primeBitLength !== BITS_BLUM_PRIME) {
-    throw new Error(`INVALID_P_BITS: ${primeBitLength} !== ${BITS_BLUM_PRIME}`);
-  }
-  if (p % 4n !== 3n) {
-    throw new Error(`INVALID_P_MOD_4: ${p} % 4 !== 3`);
-  }
-  const pMinus1div2 = (p - 1n) / 2n;
-  const isPrime = await isProbablyPrime(pMinus1div2, 1);
-  if (!isPrime) {
-    throw new Error(`INVALID_P_MINUS_1_DIV_2: ${pMinus1div2} is not prime`);
-  }
-}
-
-export const paillierValidateN = (n: bigint) => {
-  if (!n) { throw new Error('N_IS_NULL'); }
-
-  const bits = bitLength(n);
-  if (bits !== BITS_PAILLIER) {
-    throw new Error(`INVALID_N_BITS: ${bits} !== ${BITS_PAILLIER}`);
-  }
-
-  if (n % 2n === 0n) {
-    throw new Error(`INVALID_N_EVEN: ${n} is even`);
-  }
-};

@@ -2,7 +2,6 @@ import { SignPartyInputRound1 } from './SignerRound1.js';
 import { AffinePoint } from "../common.types.js";
 import { PartyId, otherPartyIds } from '../keyConfig.js';
 import { ZkEncProof, ZkEncPublic, zkEncVerifyProof } from '../zk/enc.js';
-import { validateCiphertext } from '../paillier.js';
 import {
   SignBroadcastForRound3, SignInputForRound3, SignMessageForRound3,
 } from './SignerRound3.js';
@@ -56,8 +55,8 @@ export class SignerRound2 {
   public handleBroadcastMessage(bmsg: SignBroadcastForRound2): void {
     const paillierFrom = this.roundInput
       .inputForRound1.partiesPublic[bmsg.from].paillier;
-    const cipherTextsValid = validateCiphertext(paillierFrom, bmsg.K) &&
-      validateCiphertext(paillierFrom, bmsg.G);
+    const cipherTextsValid = paillierFrom.validateCiphertext(bmsg.K) &&
+      paillierFrom.validateCiphertext(bmsg.G);
     if (!cipherTextsValid) {
       throw new Error(`Invalid ciphertexts from party ${bmsg.from}`);
     }

@@ -2,10 +2,7 @@ import { modMultiply, modPow } from "bigint-crypto-utils";
 
 import Fn from "../Fn.js";
 import { isValidModN, isInIntervalLeps } from "../arith.js";
-import {
-  PaillierPublicKey, paillierAdd, paillierEncryptWithNonce,
-  paillierMultiply, validateCiphertext
-} from "../paillier.js";
+import { PaillierPublicKey, paillierAdd, paillierMultiply } from "../paillier.js";
 import { PedersenParams } from "../pedersen.js";
 import {
   sampleUnitModN, sampleIntervalLeps, sampleIntervalLN,
@@ -71,7 +68,7 @@ export const zkEncCreateProof = (
   const mu = sampleIntervalLN();
   const gamma = sampleIntervalLepsN();
 
-  const A = paillierEncryptWithNonce(pub.prover, alpha, r);
+  const A = pub.prover.encryptWithNonce(alpha, r);
 
   const commitment: ZkEncCommitment = {
     S: pub.aux.commit(priv.k, mu),
@@ -110,7 +107,7 @@ export const zkEncVerifyProof = (
     return false;
   }
 
-  const lhs = paillierEncryptWithNonce(pub.prover, proof.Z1, proof.Z2);
+  const lhs = pub.prover.encryptWithNonce(proof.Z1, proof.Z2);
   const rhs = paillierAdd(
     pub.prover,
     paillierMultiply(pub.prover, pub.K, e),
@@ -125,7 +122,7 @@ export const zkEncIsPublicValid = (
   pub: ZkEncPublic,
 ): boolean => {
   if (!proof) { return false; }
-  if (!validateCiphertext(pub.prover, proof.commitment.A)) { return false; }
+  if (!pub.prover.validateCiphertext(proof.commitment.A)) { return false; }
   if (!isValidModN(pub.prover.n, proof.Z2)) { return false; }
   return true;
 }

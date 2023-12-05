@@ -2,7 +2,7 @@ import { secp256k1 } from "@noble/curves/secp256k1";
 
 import { isInIntervalLeps, isValidModN } from "../arith.js";
 import { AffinePoint } from "../common.types.js";
-import { PaillierPublicKey, paillierAdd, paillierEncryptWithNonce, paillierMultiply, validateCiphertext } from "../paillier.js";
+import { PaillierPublicKey, paillierAdd, paillierMultiply } from "../paillier.js";
 import { PedersenParams } from "../pedersen.js";
 import {
   sampleIntervalLN, sampleIntervalLeps, sampleIntervalLepsN,
@@ -45,7 +45,7 @@ export const zkLogstarIsProofValid = (
   pub: ZkLogstarPublic,
 ): boolean => {
   if (!proof) { return false; }
-  if (!validateCiphertext(pub.prover, proof.commitment.A)) { return false; }
+  if (!pub.prover.validateCiphertext(proof.commitment.A)) { return false; }
   const point = secp256k1.ProjectivePoint.fromAffine(proof.commitment.Y);
   if (isIdentity(point)) { return false; }
   if (!isValidModN(pub.prover.n, proof.Z2)) { return false; }
@@ -70,7 +70,7 @@ export const zkLogstarCreateProof = (
 
   const pointG = secp256k1.ProjectivePoint.fromAffine(pub.G);
   const commitment: ZkLogstarCommitment = {
-    A: paillierEncryptWithNonce(pub.prover, alpha, r),
+    A: pub.prover.encryptWithNonce(alpha, r),
     Y: pointG.multiply(Fn.mod(alpha)).toAffine(),
     S: pub.aux.commit(priv.X, mu),
     D: pub.aux.commit(alpha, gamma),
@@ -118,7 +118,7 @@ export const zkLogstarVerifyProof = (
     return false;
   }
 
-  const lhs = paillierEncryptWithNonce(pub.prover, proof.Z1, proof.Z2);
+  const lhs = pub.prover.encryptWithNonce(proof.Z1, proof.Z2);
   const rhs = paillierAdd(
     pub.prover,
     paillierMultiply(pub.prover, pub.C, e),

@@ -1,9 +1,7 @@
 import { randBetween } from "bigint-crypto-utils";
 import { partyIdToScalar } from "../keyConfig.js";
-import {
-  PaillierSecretKey, generatePedersen, paillierSecretKeyFromPrimes,
-  randomPaillierPrimes, validatePaillierPrime,
-} from "../paillier.js";
+import { PaillierSecretKey } from "../paillier.js";
+import { randomPaillierPrimes, validatePaillierPrime } from '../paillierKeygen.js';
 import { Exponent } from "../polynomial/exponent.js";
 import { Polynomial } from "../polynomial/polynomial.js";
 import { sampleScalarPointPair } from "../sample.js";
@@ -44,17 +42,17 @@ export class KeygenRound1 {
       const { p, q } = this.input.precomputedPaillierPrimes;
       await validatePaillierPrime(p);
       await validatePaillierPrime(q);
-      paillierSecret = paillierSecretKeyFromPrimes(p, q);
+      paillierSecret = PaillierSecretKey.fromPrimes(p, q);
     } else {
       const { p, q } = await randomPaillierPrimes();
-      paillierSecret = paillierSecretKeyFromPrimes(p, q);
+      paillierSecret = PaillierSecretKey.fromPrimes(p, q);
     }
 
     const selfPaillierPublic = paillierSecret.publicKey;
     const {
       pedersen: selfPedersenPublic,
       lambda: pedersenSecret,
-    } = generatePedersen(paillierSecret);
+    } = paillierSecret.generatePedersen();
 
     const [elGamalSecret, elGamalPublic] = sampleScalarPointPair();
 

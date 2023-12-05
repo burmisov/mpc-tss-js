@@ -4,7 +4,8 @@ import assert from "node:assert/strict";
 import { modMultiply, modPow } from "bigint-crypto-utils";
 
 import { sampleQNR } from "../sample.js";
-import { paillierSecretKeyFromPrimes, validatePaillierPrime } from "../paillier.js";
+import { PaillierSecretKey } from "../paillier.js";
+import { validatePaillierPrime } from '../paillierKeygen.js';
 import { Hasher } from "../Hasher.js";
 import {
   ZkModPrivate, ZkModPublic,
@@ -17,7 +18,7 @@ describe("zk/mod", async () => {
   const q = 178784929586423449637890491161861655617854412540709400421874212815293580828404739498291345696103341491924297140261396221041987821086550770172144419152711267591283272834659746554330603868249176073673884285246036132552905332762099384955889000396765335249879642433930458968871576233738650973235318810378637560383n;
   await validatePaillierPrime(p);
   await validatePaillierPrime(q);
-  const paillierSecretKey = paillierSecretKeyFromPrimes(p, q);
+  const paillierSecretKey = PaillierSecretKey.fromPrimes(p, q);
 
   test('setFourthRoot', async () => {
     const p = 311n;

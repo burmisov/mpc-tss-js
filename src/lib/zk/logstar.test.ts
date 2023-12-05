@@ -6,10 +6,8 @@ import {
   zkLogstarCreateProof, zkLogstarVerifyProof,
 } from "./logstar.js";
 import { sampleIntervalL } from "../sample.js";
-import {
-  paillierEncrypt, generatePedersen,
-  paillierSecretKeyFromPrimes, validatePaillierPrime,
-} from "../paillier.js";
+import { PaillierSecretKey } from "../paillier.js";
+import { validatePaillierPrime } from '../paillierKeygen.js';
 import { secp256k1 } from "@noble/curves/secp256k1";
 import { randBetween } from "bigint-crypto-utils";
 import Fn from "../Fn.js";
@@ -21,17 +19,17 @@ describe("zk/enc", () => {
     const q = 144651337722999591357894368476987413731327694772730408677878934803626218325763401733049627551150267745019646164141178748986827450041894571742897062718616997949877925740444144291875968298065299373438319317040746398994377200405476019627025944607850551945311780131978961657839712750089596117856255513589953855963n;
     await validatePaillierPrime(p);
     await validatePaillierPrime(q);
-    const paillierSecretKey = paillierSecretKeyFromPrimes(p, q);
+    const paillierSecretKey = PaillierSecretKey.fromPrimes(p, q);
     const paillierPublicKey = paillierSecretKey.publicKey;
 
-    const { pedersen } = generatePedersen(paillierSecretKey);
+    const { pedersen } = paillierSecretKey.generatePedersen();
 
     const Gproj = secp256k1.ProjectivePoint.BASE.multiply(
       randBetween(secp256k1.CURVE.n - 1n)
     );
     const G = Gproj.toAffine();
     const x = sampleIntervalL();
-    const { ciphertext: C, nonce: rho } = paillierEncrypt(paillierPublicKey, x);
+    const { ciphertext: C, nonce: rho } = paillierPublicKey.encrypt(x);
     const X = Gproj.multiply(Fn.mod(x));
 
     const pub: ZkLogstarPublic = {

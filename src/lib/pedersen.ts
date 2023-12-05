@@ -1,7 +1,7 @@
 import { gcd, modPow, modMultiply } from "bigint-crypto-utils";
 
 import { Hashable, IngestableBasic } from "./Hasher.js";
-import { ToJSONable } from './serde.js'
+import { JSONable } from './serde.js'
 
 export type PedersenParametersJSON = {
   nHex: string;
@@ -9,7 +9,7 @@ export type PedersenParametersJSON = {
   tHex: string;
 };
 
-export class PedersenParams implements Hashable, ToJSONable {
+export class PedersenParams implements Hashable, JSONable {
   private _n: bigint;
   private _s: bigint;
   private _t: bigint;

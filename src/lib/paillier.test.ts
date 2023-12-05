@@ -7,31 +7,28 @@ import assert from 'node:assert/strict';
 import { randBetween } from 'bigint-crypto-utils';
 
 import {
-  paillierSecretKeyFromPrimes,
-  paillierEncrypt,
-  paillierDecrypt,
+  PaillierPublicKey,
+  PaillierSecretKey,
+  PaillierSecretKeyJSON,
   paillierAdd,
   paillierMultiply,
-  randomPaillierPrimes,
-  validatePaillierPrime,
-  PaillierSecretKeySerialized,
-  paillierSecretKeyFromSerialized,
-  paillierPublicKeyFromSerialized,
 } from "./paillier.js";
+import {
+  randomPaillierPrimes,
+  validatePaillierPrime
+} from './paillierKeygen.js';
 
 describe("Paillier encryption", async () => {
   const p = 179592502110335963336347735108907147317760904272746519157588428198851642173043932077383231024080457777437444199308940940528740158020956955835017958704625931695110457545843284994471316520797998498062474296013358438785968440081020607611888287234488233606613994066898948321434201732737366068220153564935475802567n;
   const q = 144651337722999591357894368476987413731327694772730408677878934803626218325763401733049627551150267745019646164141178748986827450041894571742897062718616997949877925740444144291875968298065299373438319317040746398994377200405476019627025944607850551945311780131978961657839712750089596117856255513589953855963n;
   await validatePaillierPrime(p);
   await validatePaillierPrime(q);
-  const paillierSecretKey = paillierSecretKeyFromPrimes(p, q);
+  const paillierSecretKey = PaillierSecretKey.fromPrimes(p, q);
   const paillierPublicKey = paillierSecretKey.publicKey;
 
   const encryptDecryptRoundTripTest = (message: bigint) => {
-    const { ciphertext } = paillierEncrypt(
-      paillierPublicKey, message,
-    );
-    const messageDecrypted = paillierDecrypt(paillierSecretKey, ciphertext);
+    const { ciphertext } = paillierPublicKey.encrypt(message);
+    const messageDecrypted = paillierSecretKey.decrypt(ciphertext);
     assert.equal(
       message, messageDecrypted,
       'Decrypted message does not match original'
@@ -39,19 +36,13 @@ describe("Paillier encryption", async () => {
   }
 
   const homomorphicAddTest = (messageA: bigint, messageB: bigint) => {
-    const { ciphertext: ciphertextA } = paillierEncrypt(
-      paillierPublicKey, messageA,
-    );
-    const { ciphertext: ciphertextB } = paillierEncrypt(
-      paillierPublicKey, messageB,
-    );
+    const { ciphertext: ciphertextA } = paillierPublicKey.encrypt(messageA);
+    const { ciphertext: ciphertextB } = paillierPublicKey.encrypt(messageB);
     const ciphertextSum = paillierAdd(
       paillierPublicKey, ciphertextA, ciphertextB
     );
     const expectedSum = messageA + messageB;
-    const decryptedSum = paillierDecrypt(
-      paillierSecretKey, ciphertextSum
-    );
+    const decryptedSum = paillierSecretKey.decrypt(ciphertextSum);
     assert.equal(
       expectedSum, decryptedSum,
       'Homomorphic addition failed'
@@ -59,12 +50,10 @@ describe("Paillier encryption", async () => {
   }
 
   const homomorphicMultiplyTest = (message: bigint, scalar: bigint) => {
-    const { ciphertext } = paillierEncrypt(
-      paillierPublicKey, message,
-    );
+    const { ciphertext } = paillierPublicKey.encrypt(message);
     const ciphertextProduct = paillierMultiply(paillierPublicKey, ciphertext, scalar);
     const expectedProduct = message * scalar;
-    const decryptedProduct = paillierDecrypt(paillierSecretKey, ciphertextProduct);
+    const decryptedProduct = paillierSecretKey.decrypt(ciphertextProduct);
     assert.equal(
       expectedProduct, decryptedProduct,
       'Homomorphic multiplication failed'
@@ -74,7 +63,7 @@ describe("Paillier encryption", async () => {
   it('validates ciphertext', () => {
     assert.throws(
       () => {
-        paillierDecrypt(paillierSecretKey, 0n);
+        paillierSecretKey.decrypt(0n);
       },
       { message: 'INVALID_CIPHERTEXT' },
       'decrypting 0 should fail',
@@ -82,7 +71,7 @@ describe("Paillier encryption", async () => {
 
     assert.throws(
       () => {
-        paillierDecrypt(paillierSecretKey, paillierPublicKey.n);
+        paillierSecretKey.decrypt(paillierPublicKey.n);
       },
       { message: 'INVALID_CIPHERTEXT' },
       'decrypting N should fail',
@@ -90,7 +79,7 @@ describe("Paillier encryption", async () => {
 
     assert.throws(
       () => {
-        paillierDecrypt(paillierSecretKey, paillierPublicKey.n * 2n);
+        paillierSecretKey.decrypt(paillierPublicKey.n * 2n);
       },
       { message: 'INVALID_CIPHERTEXT' },
       'decrypting 2N should fail',
@@ -98,7 +87,7 @@ describe("Paillier encryption", async () => {
 
     assert.throws(
       () => {
-        paillierDecrypt(paillierSecretKey, paillierPublicKey.n ** 2n);
+        paillierSecretKey.decrypt(paillierPublicKey.n ** 2n);
       },
       { message: 'INVALID_CIPHERTEXT' },
       'decrypting N^2 should fail',
@@ -106,28 +95,24 @@ describe("Paillier encryption", async () => {
   });
 
   it('deserializes keys', () => {
-    const secretKeySerialized: PaillierSecretKeySerialized = {
+    const secretKeySerialized: PaillierSecretKeyJSON = {
       pHex: p.toString(16),
       qHex: q.toString(16),
     };
-    const secretKeyDeserialized = paillierSecretKeyFromSerialized(
-      secretKeySerialized
-    );
-    assert.deepStrictEqual(
-      paillierSecretKey,
-      secretKeyDeserialized,
+    const secretKeyDeserialized = PaillierSecretKey.fromJSON(secretKeySerialized);
+    assert.equal(
+      paillierSecretKey.publicKey.n,
+      secretKeyDeserialized.publicKey.n,
       'Deserialized secret key does not match original'
     );
 
     const publicKeySerialized = {
       nHex: paillierPublicKey.n.toString(16),
     };
-    const publicKeyDeserialized = paillierPublicKeyFromSerialized(
-      publicKeySerialized
-    );
-    assert.deepStrictEqual(
-      paillierPublicKey,
-      publicKeyDeserialized,
+    const publicKeyDeserialized = PaillierPublicKey.fromJSON(publicKeySerialized);
+    assert.equal(
+      paillierPublicKey.n,
+      publicKeyDeserialized.n,
       'Deserialized public key does not match original'
     );
   });
@@ -157,7 +142,7 @@ describe("Paillier encryption", async () => {
 
   it('LONG: generates a secret key from random primes', { skip: true }, async () => {
     const { p, q } = await randomPaillierPrimes();
-    const secretKey = paillierSecretKeyFromPrimes(p, q);
+    const secretKey = PaillierSecretKey.fromPrimes(p, q);
     validatePaillierPrime(p);
     validatePaillierPrime(q);
   });

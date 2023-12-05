@@ -2,7 +2,6 @@ import { bytesToNumberBE, equalBytes } from "@noble/curves/abstract/utils";
 import { blake3 } from "@noble/hashes/blake3";
 import { Input, hexToBytes } from "@noble/hashes/utils";
 import { ProjectivePoint, AffinePoint } from "./common.types.js";
-import { PaillierPublicKey } from "./paillier.js";
 import { randBytesSync } from "bigint-crypto-utils";
 import { Exponent } from "./polynomial/exponent.js";
 
@@ -11,8 +10,7 @@ export interface Hashable {
   hashable(): Array<IngestableBasic>;
 }
 
-type Ingestable = IngestableBasic | ProjectivePoint | AffinePoint |
-  PaillierPublicKey | Exponent | Hashable;
+type Ingestable = IngestableBasic | ProjectivePoint | AffinePoint |  Exponent | Hashable;
 
 export class Hasher {
   private hash: ReturnType<typeof blake3.create>;
@@ -92,14 +90,6 @@ export class Hasher {
         buf.push(p.x);
         buf.push(p.y);
       }
-    } else if (typeof (data as PaillierPublicKey).n === 'bigint' &&
-      typeof (data as PaillierPublicKey).nSquared === 'bigint' &&
-      typeof (data as PaillierPublicKey).nPlusOne === 'bigint' &&
-      Object.keys(data).length === 3
-    ) {
-      buf.push((data as PaillierPublicKey).n);
-      buf.push((data as PaillierPublicKey).nSquared);
-      buf.push((data as PaillierPublicKey).nPlusOne);
     } else if (
       typeof (data as AffinePoint).x === 'bigint' &&
       typeof (data as AffinePoint).y === 'bigint'
