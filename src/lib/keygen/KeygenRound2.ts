@@ -11,7 +11,7 @@ import { KeygenInputForRound1 } from "./KeygenRound1.js";
 import { KeygenBroadcastForRound3, KeygenInputForRound3 } from "./KeygenRound3.js";
 import { KeygenSession } from "./KeygenSession.js";
 
-type KeygenBroadcastForRound2JSON = {
+export type KeygenBroadcastForRound2JSON = {
   from: string,
   commitmentHex: string,
 };

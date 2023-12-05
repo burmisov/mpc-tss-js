@@ -2,7 +2,7 @@
 
 **WARNING: Work in progress!**
 
-An attempt to implement a multi-party computation (MPC) threshold signature scheme (TSS) in Javascript/Typescript for use on Node.js, browsers, react-native apps and other modern JS platforms. This strives to be secure and auditable, based on state of the art research and proven implementations, MIT-licensed.
+An attempt to implement a multi-party computation (MPC) threshold signature scheme (TSS) in Javascript/Typescript for use on Node.js, browsers, react-native apps and other modern JS platforms. This strives to be secure and auditable, based on state of the art research and proven implementations, permissively licensed.
 
 The approach is described in the original paper by Canetti et al.,
 "UC Non-Interactive, Proactive, Threshold ECDSA with Identifiable Aborts"
