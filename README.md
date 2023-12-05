@@ -10,6 +10,11 @@ https://eprint.iacr.org/2021/060
 
 ## Current status
 
+Updated Dec 5, 2023:
+
+Full keygen + signing works, now need to publish to be able to use externally
+for a demo check. Get back to refinement after that.
+
 Updated Dec 2, 2023:
 
 Milestone 2 sort of complete -- the library is able to generate a 3-party
@@ -64,24 +69,13 @@ like emulates) signatories communication throught the 5 rounds of creating a sig
 
 ### Features
 
-- [x] MILESTONE 2: Implement a key generation ceremony; generate valid party setups and create a valid signature
-- [x] ZK Proofs -- sch
-- [x] ZK Proofs -- fac
-- [x] ZK Proofs -- mod
-- [x] ZK Proofs -- prm
-- [x] Polynomials
-- [x] Polynomial Exponent
-- [x] Keygen round 1
-- [x] Keygen round 2
-- [x] Keygen round 3
-- [x] Keygen round 4
-- [x] Keygen round 5
-- [x] Implement KeyConfig hashing and amend round 5
-- [x] End-to-end test with keygen and signing with fresh keys (arbitrary parties)
-- [ ] check zk/mod
+- [x] Make rounds' communication JSON-serializable
+- [x] Prepare v0 publish artifacts
+- [ ] Publish to try to use externally
 
 ### Other
 
+- [ ] check zk/mod
 - [ ] Hashing with domains
 - [ ] BIP32 signing
 - [ ] Refactor and cleanup
@@ -89,7 +83,7 @@ like emulates) signatories communication throught the 5 rounds of creating a sig
 - [ ] ElGamal
 - [ ] Oblivious Transfer
 - [ ] Create a proper readme
-- [ ] Add a workflow to test and publish
+- [ ] Add a workflow to test (and publish?)
 - [x] Configure my system for signed commits
 - [ ] MILESTONE 3+: Review, add Schnorr and Ed25519 signatures to the scope, implement key refresh ceremony, etc.
 
@@ -122,6 +116,21 @@ like emulates) signatories communication throught the 5 rounds of creating a sig
 - [x] Blake3-based hasher class
 - [x] Signing round data and implementations
 - [x] ECDSA with secp256k1 utils (use/wrap @noble/curves -- did use it)
+
+- [x] MILESTONE 2: Implement a key generation ceremony; generate valid party setups and create a valid signature
+- [x] ZK Proofs -- sch
+- [x] ZK Proofs -- fac
+- [x] ZK Proofs -- mod
+- [x] ZK Proofs -- prm
+- [x] Polynomials
+- [x] Polynomial Exponent
+- [x] Keygen round 1
+- [x] Keygen round 2
+- [x] Keygen round 3
+- [x] Keygen round 4
+- [x] Keygen round 5
+- [x] Implement KeyConfig hashing and amend round 5
+- [x] End-to-end test with keygen and signing with fresh keys (arbitrary parties)
 
 ## Intellectual Property
 
