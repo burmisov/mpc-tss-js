@@ -9,8 +9,8 @@ import { KeygenRound2, KeygenRound2Output } from './KeygenRound2.js';
 import { KeygenRound3, KeygenRound3Output } from './KeygenRound3.js';
 import { KeygenRound4, KeygenRound4Output } from './KeygenRound4.js';
 import { KeygenRound5, KeygenRound5Output } from './KeygenRound5.js';
-import { getPublicPoint } from '../keyConfig.js';
 import { ethAddress } from '../eth.js';
+import { Hasher } from '../Hasher.js';
 
 const precomputedPaillierPrimesA = {
   p: 140656066935617068498146945231934875455216373658357415502745428687235261656648638287551719750772170167072660618746434922467026175316328679021082239834872641463481202598538804109033672325604594242999482643715131298123781048438272500363100287151576822437239577277536933950267625817888142008490020035657029276407n,
@@ -163,20 +163,19 @@ describe('keygen 2/3', async () => {
     allBroadcasts.forEach((b) => keygenRound5C.handleBroadcastMessage(b));
     outputRound5C = keygenRound5C.process();
 
-    // TODO: replace with hashes once we have them
-    // assert.deepEqual(
-    //   outputRound5A.UpdatedConfig.publicPartyData,
-    //   outputRound5B.UpdatedConfig.publicPartyData,
-    // );
-    // assert.deepEqual(
-    //   outputRound5A.UpdatedConfig.publicPartyData,
-    //   outputRound5C.UpdatedConfig.publicPartyData
-    // );
+    assert.deepEqual(
+      Hasher.create().update(outputRound5A.UpdatedConfig).digestBigint(),
+      Hasher.create().update(outputRound5B.UpdatedConfig).digestBigint(),
+    );
+    assert.deepEqual(
+      Hasher.create().update(outputRound5A.UpdatedConfig).digestBigint(),
+      Hasher.create().update(outputRound5C.UpdatedConfig).digestBigint(),
+    );
   });
 
   test('public key eth address valid', async () => {
     const partyConfigA = outputRound5A.UpdatedConfig;
-    const pubPoint = getPublicPoint(partyConfigA.publicPartyData);
+    const pubPoint = partyConfigA.publicPoint();
     const address = ethAddress(pubPoint);
 
     // As address is different each time, we can only check that it is valid

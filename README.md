@@ -76,9 +76,8 @@ like emulates) signatories communication throught the 5 rounds of creating a sig
 - [x] Keygen round 3
 - [x] Keygen round 4
 - [x] Keygen round 5
-- [ ] Implement KeyConfig hashing and amend round 5
-- [x] End-to-end test with keygen and signing with fresh keys (manual)
-- [ ] End-to-end test with keygen and signing with fresh keys (auto)
+- [x] Implement KeyConfig hashing and amend round 5
+- [x] End-to-end test with keygen and signing with fresh keys (arbitrary parties)
 - [ ] check zk/mod
 
 ### Other

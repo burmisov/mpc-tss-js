@@ -5,7 +5,7 @@ import { bytesToHex } from '@noble/hashes/utils';
 import { keccak_256 } from '@noble/hashes/sha3';
 import * as ethers from 'ethers';
 
-import { PartyId, PartySecretKeyConfig, getPublicPoint } from '../lib/keyConfig.js';
+import { PartyId, PartySecretKeyConfig } from '../lib/keyConfig.js';
 import { KeygenSession } from '../lib/keygen/KeygenSession.js';
 import { KeygenRound1, KeygenRound1Output } from '../lib/keygen/KeygenRound1.js';
 import { KeygenRound2, KeygenRound2Output } from '../lib/keygen/KeygenRound2.js';
@@ -202,7 +202,7 @@ test('keygen + sign', async () => {
     assert.deepEqual(round5outputA, signersRound5Outputs[partyId]);
   }
 
-  const pubPoint = getPublicPoint(partyConfigs['a'].publicPartyData);
+  const pubPoint = partyConfigs['a'].publicPoint();
   const address = ethAddress(pubPoint);
 
   const ethSig = sigEthereum(round5outputA.signature.R, round5outputA.signature.S);

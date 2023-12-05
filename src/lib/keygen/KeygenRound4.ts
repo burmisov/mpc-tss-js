@@ -146,16 +146,16 @@ export class KeygenRound4 {
         // TODO: on refresh
         throw new Error('not implemented');
       }
-      PublicData[j] = {
+      PublicData[j] = PartyPublicKeyConfig.from({
         partyId: j,
         ecdsa: PublicECDSAShare,
         elgamal: this.input.ElGamalPublic[j],
         paillier: this.input.PaillierPublic[j],
         pedersen: this.input.PedersenPublic[j],
-      };
+      });
     }
 
-    const UpdatedConfig: PartySecretKeyConfig = {
+    const UpdatedConfig = PartySecretKeyConfig.from({
       curve: 'secp256k1',
       partyId: this.session.selfId,
       threshold: this.session.threshold,
@@ -165,11 +165,10 @@ export class KeygenRound4 {
       rid: this.input.RID,
       chainKey: this.input.ChainKey,
       publicPartyData: PublicData,
-    };
+    });
 
-    // TODO: update hash with config data properly
     const hashTmp = this.session.hasher.clone().updateMulti([
-      UpdatedConfig.rid, // <-- TODO: whole config should be here
+      UpdatedConfig,
       this.session.selfId,
     ]);
 
@@ -186,14 +185,14 @@ export class KeygenRound4 {
     }];
 
     this.session.hasher.updateMulti([
-      UpdatedConfig.rid, // <-- TODO: whole config should be here
+      UpdatedConfig,
     ]);
 
     return {
       broadcasts,
       inputForRound5: {
         inputForRound4: this.input,
-        UpdatedConfig: UpdatedConfig,
+        UpdatedConfig,
       },
     };
   }

@@ -54,18 +54,9 @@ export class SignSession {
       };
     });
 
-    // TODO: make consistent with original
     this.hasher = Hasher.create().update('CMP-BLAKE');
-    this.hasher.update(keyConfig.rid);
     this.hasher.update(this.protocolId);
-    this.hasher.update(this.curve);
-    this.hasher.update(BigInt(this.threshold));
-    for (let partyId of signRequest.signerIds) {
-      this.hasher.update(partyId);
-      this.hasher.update(partiesPublic[partyId].ecdsa);
-      this.hasher.update(partiesPublic[partyId].paillier);
-      this.hasher.update(partiesPublic[partyId].pedersen);
-    }
+    this.hasher.update(keyConfig);
     this.hasher.update(signRequest.message);
 
     this.inputForRound1 = {

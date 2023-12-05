@@ -5,8 +5,7 @@ import * as ethers from 'ethers';
 
 import { AffinePointSerialized } from '../common.types.js';
 import {
-  PartyPublicKeyConfigSerialized, PartySecretKeyConfig,
-  PartySecretKeyConfigSerialized, deserializePartySecretKeyConfig, getPublicPoint,
+  PartyPublicKeyConfigJSON, PartySecretKeyConfig, PartySecretKeyConfigJSON,
 } from "../keyConfig.js";
 import {
   PaillierPublicKeyJSON, PaillierSecretKeyJSON,
@@ -25,7 +24,7 @@ import { ethAddress, sigEthereum } from '../eth.js';
 import { bytesToHex } from '@noble/hashes/utils';
 import { keccak_256 } from '@noble/hashes/sha3';
 
-const publicKeyConfigA: PartyPublicKeyConfigSerialized = {
+const publicKeyConfigA: PartyPublicKeyConfigJSON = {
   partyId: 'a',
   ecdsa: {
     xHex: 'ac7ef6fdd8a10d04210861c9e8758e2372350d0f640847d36b49459fc4f2e899',
@@ -45,7 +44,7 @@ const publicKeyConfigA: PartyPublicKeyConfigSerialized = {
   },
 };
 
-const publicKeyConfigB: PartyPublicKeyConfigSerialized = {
+const publicKeyConfigB: PartyPublicKeyConfigJSON = {
   partyId: 'b',
   ecdsa: {
     xHex: 'e636c580298dfe697ca9ac96154e31338527d0c2b1d0df4628a6df30208410f3',
@@ -65,7 +64,7 @@ const publicKeyConfigB: PartyPublicKeyConfigSerialized = {
   },
 };
 
-const publicKeyConfigC: PartyPublicKeyConfigSerialized = {
+const publicKeyConfigC: PartyPublicKeyConfigJSON = {
   partyId: 'c',
   ecdsa: {
     xHex: 'f3d1d2e987fda9d61baabe34dff98293becf23ff941aee4c1c28f449fb52c15c',
@@ -85,7 +84,7 @@ const publicKeyConfigC: PartyPublicKeyConfigSerialized = {
   },
 };
 
-const secretKeyConfigA: PartySecretKeyConfigSerialized = {
+const secretKeyConfigA: PartySecretKeyConfigJSON = {
   partyId: 'a',
   curve: 'secp256k1',
   threshold: 1,
@@ -104,7 +103,7 @@ const secretKeyConfigA: PartySecretKeyConfigSerialized = {
   },
 }
 
-const secretKeyConfigB: PartySecretKeyConfigSerialized = {
+const secretKeyConfigB: PartySecretKeyConfigJSON = {
   partyId: 'b',
   curve: 'secp256k1',
   threshold: 1,
@@ -123,7 +122,7 @@ const secretKeyConfigB: PartySecretKeyConfigSerialized = {
   },
 }
 
-const secretKeyConfigC: PartySecretKeyConfigSerialized = {
+const secretKeyConfigC: PartySecretKeyConfigJSON = {
   partyId: 'c',
   curve: 'secp256k1',
   threshold: 1,
@@ -257,15 +256,15 @@ describe('sign 3/3 (all parties)', () => {
   let round5outputC: SignPartyOutputRound5;
 
   it('prepares session', () => {
-    partyConfigA = deserializePartySecretKeyConfig(secretKeyConfigA);
+    partyConfigA = PartySecretKeyConfig.fromJSON(secretKeyConfigA);
     sessionA = new SignSession(signRequest, partyConfigA);
     inputForRound1A = sessionA.inputForRound1;
 
-    partyConfigB = deserializePartySecretKeyConfig(secretKeyConfigB);
+    partyConfigB = PartySecretKeyConfig.fromJSON(secretKeyConfigB);
     sessionB = new SignSession(signRequest, partyConfigB);
     inputForRound1B = sessionB.inputForRound1;
 
-    partyConfigC = deserializePartySecretKeyConfig(secretKeyConfigC);
+    partyConfigC = PartySecretKeyConfig.fromJSON(secretKeyConfigC);
     sessionC = new SignSession(signRequest, partyConfigC);
     inputForRound1C = sessionC.inputForRound1;
   });
@@ -423,7 +422,7 @@ describe('sign 3/3 (all parties)', () => {
 
   // check signature/recover address with a major ethereum library
   it('signatures check', () => {
-    const pubPoint = getPublicPoint(partyConfigA.publicPartyData);
+    const pubPoint = partyConfigA.publicPoint();
     const address = ethAddress(pubPoint);
 
     const ethSig = sigEthereum(round5outputA.signature.R, round5outputA.signature.S);
@@ -463,11 +462,11 @@ describe('sign 2/3', () => {
   let round5outputB: SignPartyOutputRound5;
 
   it('prepares session', () => {
-    partyConfigA = deserializePartySecretKeyConfig(secretKeyConfigA);
+    partyConfigA = PartySecretKeyConfig.fromJSON(secretKeyConfigA);
     sessionA = new SignSession(signRequest, partyConfigA);
     inputForRound1A = sessionA.inputForRound1;
 
-    partyConfigB = deserializePartySecretKeyConfig(secretKeyConfigB);
+    partyConfigB = PartySecretKeyConfig.fromJSON(secretKeyConfigB);
     sessionB = new SignSession(signRequest, partyConfigB);
     inputForRound1B = sessionB.inputForRound1;
   });
@@ -577,7 +576,7 @@ describe('sign 2/3', () => {
 
   // check signature/recover address with a major ethereum library
   it('signatures check', () => {
-    const pubPoint = getPublicPoint(partyConfigA.publicPartyData);
+    const pubPoint = partyConfigA.publicPoint();
     const address = ethAddress(pubPoint);
 
     const ethSig = sigEthereum(round5outputA.signature.R, round5outputA.signature.S);
