@@ -1,7 +1,7 @@
 {
   "name": "mpc-tss",
   "type": "module",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Multi-Party Computation Threshold Signature Scheme Implementation in Javascript",
   "repository": {
     "type": "git",
