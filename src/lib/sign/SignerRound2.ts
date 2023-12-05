@@ -1,7 +1,9 @@
 import { SignPartyInputRound1 } from './SignerRound1.js';
 import { AffinePoint } from "../common.types.js";
 import { PartyId, otherPartyIds } from '../keyConfig.js';
-import { ZkEncProof, ZkEncPublic, zkEncVerifyProof } from '../zk/enc.js';
+import {
+  ZkEncProof, ZkEncProofJSON, ZkEncPublic, zkEncVerifyProof,
+} from '../zk/enc.js';
 import {
   SignBroadcastForRound3, SignInputForRound3, SignMessageForRound3,
 } from './SignerRound3.js';
@@ -22,16 +24,100 @@ export type SignPartyInputRound2 = {
   GNonce: bigint;
 };
 
-export type SignBroadcastForRound2 = {
-  from: PartyId;
-  K: bigint; // Paillier ciphertext
-  G: bigint; // Paillier ciphertext
+export type SignBroadcastForRound2JSON = {
+  from: string,
+  Khex: string,
+  Ghex: string,
 };
 
-export type SignMessageForRound2 = {
-  from: PartyId;
-  to: PartyId;
-  proofEnc: ZkEncProof;
+export class SignBroadcastForRound2 {
+  public readonly from: PartyId;
+  public readonly K: bigint; // Paillier ciphertext
+  public readonly G: bigint; // Paillier ciphertext
+
+  private constructor(from: PartyId, K: bigint, G: bigint) {
+    this.from = from;
+    this.K = K;
+    this.G = G;
+  }
+
+  public static from({
+    from,
+    K,
+    G,
+  }: {
+    from: PartyId,
+    K: bigint,
+    G: bigint,
+  }): SignBroadcastForRound2 {
+    const bmsg = new SignBroadcastForRound2(from, K, G);
+    Object.freeze(bmsg);
+    return bmsg;
+  }
+
+  public static fromJSON(json: SignBroadcastForRound2JSON): SignBroadcastForRound2 {
+    return SignBroadcastForRound2.from({
+      from: json.from as PartyId,
+      K: BigInt(`0x${json.Khex}`),
+      G: BigInt(`0x${json.Ghex}`),
+    });
+  }
+
+  public toJSON(): SignBroadcastForRound2JSON {
+    return {
+      from: this.from,
+      Khex: this.K.toString(16),
+      Ghex: this.G.toString(16),
+    };
+  }
+};
+
+export type SignMessageForRound2JSON = {
+  from: string,
+  to: string,
+  proofEnc: ZkEncProofJSON,
+};
+
+export class SignMessageForRound2 {
+  public readonly from: PartyId;
+  public readonly to: PartyId;
+  public readonly proofEnc: ZkEncProof;
+
+  private constructor(from: PartyId, to: PartyId, proofEnc: ZkEncProof) {
+    this.from = from;
+    this.to = to;
+    this.proofEnc = proofEnc;
+  }
+
+  public static from({
+    from,
+    to,
+    proofEnc,
+  }: {
+    from: PartyId,
+    to: PartyId,
+    proofEnc: ZkEncProof,
+  }): SignMessageForRound2 {
+    const msg = new SignMessageForRound2(from, to, proofEnc);
+    Object.freeze(msg);
+    return msg;
+  }
+
+  public static fromJSON(json: SignMessageForRound2JSON): SignMessageForRound2 {
+    return SignMessageForRound2.from({
+      from: json.from as PartyId,
+      to: json.to as PartyId,
+      proofEnc: ZkEncProof.fromJSON(json.proofEnc),
+    });
+  }
+
+  public toJSON(): SignMessageForRound2JSON {
+    return {
+      from: this.from,
+      to: this.to,
+      proofEnc: this.proofEnc.toJSON(),
+    };
+  }
 };
 
 export type SignPartyOutputRound2 = {
@@ -91,10 +177,10 @@ export class SignerRound2 {
     // TODO: check if all parties have sent their messages
 
     const broadcasts: [SignBroadcastForRound3] = [
-      {
+      SignBroadcastForRound3.from({
         from: this.session.selfId,
         BigGammaShare: this.roundInput.BigGammaShare,
-      },
+      }),
     ];
 
     const messages: Array<SignMessageForRound3> = [];
@@ -148,11 +234,11 @@ export class SignerRound2 {
         pub, priv, this.session.cloneHashForId(this.session.selfId),
       );
 
-      messages.push({
+      messages.push(SignMessageForRound3.from({
         from: this.session.selfId,
         to: partyId,
         ChiD, ChiF, ChiProof, DeltaD, DeltaF, DeltaProof, ProofLog: proof,
-      });
+      }));
 
       return { DeltaBeta, ChiBeta, partyId };
     });

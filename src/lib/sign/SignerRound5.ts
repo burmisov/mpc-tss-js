@@ -5,9 +5,48 @@ import { SignInputForRound4 } from "./SignerRound4.js";
 import { verifySignature } from "../curve.js";
 import { SignSession } from "./SignSession.js";
 
-export type SignBroadcastForRound5 = {
-  from: PartyId,
-  SigmaShare: bigint,
+export type SignBroadcastForRound5JSON = {
+  from: string,
+  SigmaShareHex: string,
+};
+
+export class SignBroadcastForRound5 {
+  public readonly from: PartyId;
+  public readonly SigmaShare: bigint;
+
+  private constructor(from: PartyId, SigmaShare: bigint) {
+    this.from = from;
+    this.SigmaShare = SigmaShare;
+  }
+
+  public static from({
+    from,
+    SigmaShare,
+  }: {
+    from: PartyId,
+    SigmaShare: bigint,
+  }): SignBroadcastForRound5 {
+    const bmsg = new SignBroadcastForRound5(from, SigmaShare);
+    Object.freeze(bmsg);
+    return bmsg;
+  }
+
+  public static fromJSON({
+    from,
+    SigmaShareHex,
+  }: SignBroadcastForRound5JSON): SignBroadcastForRound5 {
+    const SigmaShare = BigInt(`0x${SigmaShareHex}`);
+    const bmsg = new SignBroadcastForRound5(from, SigmaShare);
+    Object.freeze(bmsg);
+    return bmsg;
+  }
+
+  public toJSON(): SignBroadcastForRound5JSON {
+    return {
+      from: this.from,
+      SigmaShareHex: this.SigmaShare.toString(16),
+    };
+  }
 };
 
 export type SignInputForRound5 = {

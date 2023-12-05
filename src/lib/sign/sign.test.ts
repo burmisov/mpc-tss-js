@@ -12,13 +12,21 @@ import {
   PaillierPublicKey, PaillierSecretKey,
 } from '../paillier.js';
 import { PedersenParametersJSON, PedersenParams } from '../pedersen.js';
-import { SignRequestSerialized, deserializeSignRequest } from './sign.js';
+import { SignRequestJSON, SignRequest } from './sign.js';
 import { SignPartyInputRound1, SignPartyOutputRound1 } from './SignerRound1.js';
 import { SignerRound1 } from './SignerRound1.js';
-import { SignPartyOutputRound2, SignerRound2 } from './SignerRound2.js';
-import { SignPartyOutputRound3, SignerRound3 } from './SignerRound3.js';
-import { SignPartyOutputRound4, SignerRound4 } from './SignerRound4.js';
-import { SignPartyOutputRound5, SignerRound5 } from './SignerRound5.js';
+import {
+  SignBroadcastForRound2, SignMessageForRound2, SignPartyOutputRound2, SignerRound2,
+} from './SignerRound2.js';
+import {
+  SignBroadcastForRound3, SignMessageForRound3, SignPartyOutputRound3, SignerRound3,
+} from './SignerRound3.js';
+import {
+  SignBroadcastForRound4, SignMessageForRound4, SignPartyOutputRound4, SignerRound4,
+} from './SignerRound4.js';
+import {
+  SignBroadcastForRound5, SignPartyOutputRound5, SignerRound5,
+} from './SignerRound5.js';
 import { SignSession } from './SignSession.js';
 import { ethAddress, sigEthereum } from '../eth.js';
 import { bytesToHex } from '@noble/hashes/utils';
@@ -143,13 +151,13 @@ const secretKeyConfigC: PartySecretKeyConfigJSON = {
 
 const messageToSign = 'hello';
 
-const signRequestSerialized: SignRequestSerialized = {
+const signRequestSerialized: SignRequestJSON = {
   messageHex: bytesToHex(keccak_256(messageToSign)),
   signerIds: ['a', 'b', 'c'],
 }
 
 describe('sign 3/3 (all parties)', () => {
-  const signRequest = deserializeSignRequest(signRequestSerialized);
+  const signRequest = SignRequest.fromJSON(signRequestSerialized);
 
   const checkPaillierFixture = (
     publicSerialized: PaillierPublicKeyJSON,
@@ -288,19 +296,19 @@ describe('sign 3/3 (all parties)', () => {
       ...round1outputA.broadcasts,
       ...round1outputB.broadcasts,
       ...round1outputC.broadcasts,
-    ];
+    ].map((b) => b.toJSON()).map((b) => SignBroadcastForRound2.fromJSON(b));
     const directMessagesToA = [
       ...round1outputB.messages.filter((m) => m.to === 'a'),
       ...round1outputC.messages.filter((m) => m.to === 'a'),
-    ];
+    ].map((m) => m.toJSON()).map((m) => SignMessageForRound2.fromJSON(m));
     const directMessagesToB = [
       ...round1outputA.messages.filter((m) => m.to === 'b'),
       ...round1outputC.messages.filter((m) => m.to === 'b'),
-    ];
+    ].map((m) => m.toJSON()).map((m) => SignMessageForRound2.fromJSON(m));
     const directMessagesToC = [
       ...round1outputA.messages.filter((m) => m.to === 'c'),
       ...round1outputB.messages.filter((m) => m.to === 'c'),
-    ];
+    ].map((m) => m.toJSON()).map((m) => SignMessageForRound2.fromJSON(m));
 
     const signerRound2A = new SignerRound2(sessionA, round1outputA.inputForRound2);
     allBroadcasts.forEach((b) => signerRound2A.handleBroadcastMessage(b));
@@ -326,19 +334,19 @@ describe('sign 3/3 (all parties)', () => {
       ...round2outputA.broadcasts,
       ...round2outputB.broadcasts,
       ...round2outputC.broadcasts,
-    ];
+    ].map((b) => b.toJSON()).map((b) => SignBroadcastForRound3.fromJSON(b));
     const directMessagesToA = [
       ...round2outputB.messages.filter((m) => m.to === 'a'),
       ...round2outputC.messages.filter((m) => m.to === 'a'),
-    ];
+    ].map((m) => m.toJSON()).map((m) => SignMessageForRound3.fromJSON(m));
     const directMessagesToB = [
       ...round2outputA.messages.filter((m) => m.to === 'b'),
       ...round2outputC.messages.filter((m) => m.to === 'b'),
-    ];
+    ].map((m) => m.toJSON()).map((m) => SignMessageForRound3.fromJSON(m));
     const directMessagesToC = [
       ...round2outputA.messages.filter((m) => m.to === 'c'),
       ...round2outputB.messages.filter((m) => m.to === 'c'),
-    ];
+    ].map((m) => m.toJSON()).map((m) => SignMessageForRound3.fromJSON(m));
 
     const signerRound3A = new SignerRound3(sessionA, round2outputA.inputForRound3);
     allBroadcasts.forEach((b) => signerRound3A.handleBroadcastMessage(b));
@@ -364,19 +372,19 @@ describe('sign 3/3 (all parties)', () => {
       ...round3outputA.broadcasts,
       ...round3outputB.broadcasts,
       ...round3outputC.broadcasts,
-    ];
+    ].map((b) => b.toJSON()).map((b) => SignBroadcastForRound4.fromJSON(b));
     const directMessagesToA = [
       ...round3outputB.messages.filter((m) => m.to === 'a'),
       ...round3outputC.messages.filter((m) => m.to === 'a'),
-    ];
+    ].map((m) => m.toJSON()).map((m) => SignMessageForRound4.fromJSON(m));
     const directMessagesToB = [
       ...round3outputA.messages.filter((m) => m.to === 'b'),
       ...round3outputC.messages.filter((m) => m.to === 'b'),
-    ];
+    ].map((m) => m.toJSON()).map((m) => SignMessageForRound4.fromJSON(m));
     const directMessagesToC = [
       ...round3outputA.messages.filter((m) => m.to === 'c'),
       ...round3outputB.messages.filter((m) => m.to === 'c'),
-    ];
+    ].map((m) => m.toJSON()).map((m) => SignMessageForRound4.fromJSON(m));
 
     const signerRound4A = new SignerRound4(sessionA, round3outputA.inputForRound4);
     allBroadcasts.forEach((b) => signerRound4A.handleBroadcastMessage(b));
@@ -402,7 +410,7 @@ describe('sign 3/3 (all parties)', () => {
       ...round4outputA.broadcasts,
       ...round4outputB.broadcasts,
       ...round4outputC.broadcasts,
-    ];
+    ].map((b) => b.toJSON()).map((b) => SignBroadcastForRound5.fromJSON(b));
 
     const signerRound5A = new SignerRound5(sessionA, round4outputA.inputForRound5);
     allBroadcasts.forEach((b) => signerRound5A.handleBroadcastMessage(b));
@@ -436,12 +444,12 @@ describe('sign 3/3 (all parties)', () => {
 });
 
 describe('sign 2/3', () => {
-  const signRequest2of3serialized: SignRequestSerialized = {
+  const signRequest2of3serialized: SignRequestJSON = {
     messageHex: bytesToHex(keccak_256(messageToSign)),
     signerIds: ['a', 'b'],
   };
 
-  const signRequest = deserializeSignRequest(signRequest2of3serialized);
+  const signRequest = SignRequest.fromJSON(signRequest2of3serialized);
 
   let partyConfigA: PartySecretKeyConfig;
   let sessionA: SignSession;

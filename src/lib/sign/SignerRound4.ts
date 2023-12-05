@@ -1,26 +1,124 @@
 import { secp256k1 } from "@noble/curves/secp256k1";
-import { AffinePoint } from "../common.types.js";
-import { isIdentity, scalarFromHash } from "../curve.js";
+import { AffinePoint, AffinePointJSON } from "../common.types.js";
+import {
+  isIdentity, pointFromJSON, pointToJSON, scalarFromHash,
+} from "../curve.js";
 import { PartyId } from "../keyConfig.js";
 import {
-  ZkLogstarProof, ZkLogstarPublic, zkLogstarVerifyProof,
+  ZkLogstarProof, ZkLogstarProofJSON, ZkLogstarPublic, zkLogstarVerifyProof,
 } from "../zk/logstar.js";
 import { SignInputForRound3 } from "./SignerRound3.js";
 import Fn from "../Fn.js";
 import { SignBroadcastForRound5, SignInputForRound5 } from "./SignerRound5.js";
 import { SignSession } from "./SignSession.js";
 
-export type SignBroadcastForRound4 = {
-  from: PartyId;
-  DeltaShare: bigint;
-  BigDeltaShare: AffinePoint
+export type SignBroadcastForRound4JSON = {
+  from: string,
+  DeltaShareHex: string,
+  BigDeltaShare: AffinePointJSON,
 };
 
-export type SignMessageForRound4 = {
-  from: PartyId;
-  to: PartyId;
+export class SignBroadcastForRound4 {
+  public readonly from: PartyId;
+  public readonly DeltaShare: bigint;
+  public readonly BigDeltaShare: AffinePoint;
 
-  ProofLog: ZkLogstarProof;
+  private constructor(
+    from: PartyId, DeltaShare: bigint, BigDeltaShare: AffinePoint,
+  ) {
+    this.from = from;
+    this.DeltaShare = DeltaShare;
+    this.BigDeltaShare = BigDeltaShare;
+  }
+
+  public static from({
+    from,
+    DeltaShare,
+    BigDeltaShare,
+  }: {
+    from: PartyId,
+    DeltaShare: bigint,
+    BigDeltaShare: AffinePoint,
+  }): SignBroadcastForRound4 {
+    const bmsg = new SignBroadcastForRound4(from, DeltaShare, BigDeltaShare);
+    Object.freeze(bmsg);
+    return bmsg;
+  }
+
+  public static fromJSON({
+    from,
+    DeltaShareHex,
+    BigDeltaShare,
+  }: SignBroadcastForRound4JSON): SignBroadcastForRound4 {
+    const DeltaShare = BigInt(`0x${DeltaShareHex}`);
+    const bmsg = new SignBroadcastForRound4(
+      from, DeltaShare, pointFromJSON(BigDeltaShare),
+    );
+    Object.freeze(bmsg);
+    return bmsg;
+  }
+
+  public toJSON(): SignBroadcastForRound4JSON {
+    return {
+      from: this.from,
+      DeltaShareHex: this.DeltaShare.toString(16),
+      BigDeltaShare: pointToJSON(this.BigDeltaShare),
+    };
+  }
+};
+
+export type SignMessageForRound4JSON = {
+  from: string,
+  to: string,
+  ProofLog: ZkLogstarProofJSON,
+};
+
+export class SignMessageForRound4 {
+  public readonly from: PartyId;
+  public readonly to: PartyId;
+  public readonly ProofLog: ZkLogstarProof;
+
+  private constructor(
+    from: PartyId, to: PartyId, ProofLog: ZkLogstarProof,
+  ) {
+    this.from = from;
+    this.to = to;
+    this.ProofLog = ProofLog;
+  }
+
+  public static from({
+    from,
+    to,
+    ProofLog,
+  }: {
+    from: PartyId,
+    to: PartyId,
+    ProofLog: ZkLogstarProof,
+  }): SignMessageForRound4 {
+    const msg = new SignMessageForRound4(from, to, ProofLog);
+    Object.freeze(msg);
+    return msg;
+  }
+
+  public static fromJSON({
+    from,
+    to,
+    ProofLog,
+  }: SignMessageForRound4JSON): SignMessageForRound4 {
+    const msg = new SignMessageForRound4(
+      from, to, ZkLogstarProof.fromJSON(ProofLog),
+    );
+    Object.freeze(msg);
+    return msg;
+  }
+
+  public toJSON(): SignMessageForRound4JSON {
+    return {
+      from: this.from,
+      to: this.to,
+      ProofLog: this.ProofLog.toJSON(),
+    };
+  }
 };
 
 export type SignInputForRound4 = {
@@ -107,10 +205,12 @@ export class SignerRound4 {
       km
     );
 
-    const broadcasts: [SignBroadcastForRound5] = [{
-      from: this.session.selfId,
-      SigmaShare: sigmaShare,
-    }];
+    const broadcasts: [SignBroadcastForRound5] = [
+      SignBroadcastForRound5.from({
+        from: this.session.selfId,
+        SigmaShare: sigmaShare,
+      }),
+    ];
 
     this.session.currentRound = 'round5';
 

@@ -1,12 +1,14 @@
 import { secp256k1 } from "@noble/curves/secp256k1";
-import { AffinePoint } from "../common.types.js";
+import { AffinePoint, AffinePointJSON } from "../common.types.js";
 import { PartyId, otherPartyIds } from "../keyConfig.js";
-import { ZkAffgProof, ZkAffgPublic, zkAffgVerifyProof } from "../zk/affg.js";
 import {
-  ZkLogstarPrivate, ZkLogstarProof, ZkLogstarPublic,
+  ZkAffgProof, ZkAffgProofJSON, ZkAffgPublic, zkAffgVerifyProof,
+} from "../zk/affg.js";
+import {
+  ZkLogstarPrivate, ZkLogstarProof, ZkLogstarProofJSON, ZkLogstarPublic,
   zkLogstarCreateProof, zkLogstarVerifyProof,
 } from "../zk/logstar.js";
-import { isIdentity } from "../curve.js";
+import { isIdentity, pointFromJSON, pointToJSON } from "../curve.js";
 import { SignPartyInputRound2 } from "./SignerRound2.js";
 import Fn from "../Fn.js";
 import {
@@ -14,22 +16,148 @@ import {
 } from "./SignerRound4.js";
 import { SignSession } from "./SignSession.js";
 
-export type SignBroadcastForRound3 = {
-  from: PartyId;
-  BigGammaShare: AffinePoint
+export type SignBroadcastForRound3JSON = {
+  from: string,
+  BigGammaShare: AffinePointJSON,
 };
 
-export type SignMessageForRound3 = {
-  from: PartyId;
-  to: PartyId;
+export class SignBroadcastForRound3 {
+  public readonly from: PartyId;
+  public readonly BigGammaShare: AffinePoint;
 
-  DeltaD: bigint; // Ciphertext
-  DeltaF: bigint; // Ciphertext
-  DeltaProof: ZkAffgProof;
-  ChiD: bigint; // Ciphertext
-  ChiF: bigint; // Ciphertext
-  ChiProof: ZkAffgProof;
-  ProofLog: ZkLogstarProof;
+  private constructor(from: PartyId, BigGammaShare: AffinePoint) {
+    this.from = from;
+    this.BigGammaShare = BigGammaShare;
+  }
+
+  public static from({
+    from,
+    BigGammaShare,
+  }: {
+    from: PartyId,
+    BigGammaShare: AffinePoint,
+  }): SignBroadcastForRound3 {
+    const bmsg = new SignBroadcastForRound3(from, BigGammaShare);
+    Object.freeze(bmsg);
+    return bmsg;
+  }
+
+  public static fromJSON(json: SignBroadcastForRound3JSON): SignBroadcastForRound3 {
+    return SignBroadcastForRound3.from({
+      from: json.from as PartyId,
+      BigGammaShare: pointFromJSON(json.BigGammaShare),
+    });
+  }
+
+  public toJSON(): SignBroadcastForRound3JSON {
+    return {
+      from: this.from,
+      BigGammaShare: pointToJSON(this.BigGammaShare),
+    };
+  }
+};
+
+export type SignMessageForRound3JSON = {
+  from: string,
+  to: string,
+
+  DeltaDhex: string, // Ciphertext
+  DeltaFhex: string, // Ciphertext
+  DeltaProof: ZkAffgProofJSON,
+  ChiDhex: string, // Ciphertext
+  ChiFhex: string, // Ciphertext
+  ChiProof: ZkAffgProofJSON,
+  ProofLog: ZkLogstarProofJSON,
+};
+
+export class SignMessageForRound3 {
+  public readonly from: PartyId;
+  public readonly to: PartyId;
+  public readonly DeltaD: bigint; // Ciphertext
+  public readonly DeltaF: bigint; // Ciphertext
+  public readonly DeltaProof: ZkAffgProof;
+  public readonly ChiD: bigint; // Ciphertext
+  public readonly ChiF: bigint; // Ciphertext
+  public readonly ChiProof: ZkAffgProof;
+  public readonly ProofLog: ZkLogstarProof;
+
+  private constructor(
+    from: PartyId,
+    to: PartyId,
+    DeltaD: bigint,
+    DeltaF: bigint,
+    DeltaProof: ZkAffgProof,
+    ChiD: bigint,
+    ChiF: bigint,
+    ChiProof: ZkAffgProof,
+    ProofLog: ZkLogstarProof,
+  ) {
+    this.from = from;
+    this.to = to;
+    this.DeltaD = DeltaD;
+    this.DeltaF = DeltaF;
+    this.DeltaProof = DeltaProof;
+    this.ChiD = ChiD;
+    this.ChiF = ChiF;
+    this.ChiProof = ChiProof;
+    this.ProofLog = ProofLog;
+  }
+
+  public static from({
+    from,
+    to,
+    DeltaD,
+    DeltaF,
+    DeltaProof,
+    ChiD,
+    ChiF,
+    ChiProof,
+    ProofLog,
+  }: {
+    from: PartyId,
+    to: PartyId,
+    DeltaD: bigint,
+    DeltaF: bigint,
+    DeltaProof: ZkAffgProof,
+    ChiD: bigint,
+    ChiF: bigint,
+    ChiProof: ZkAffgProof,
+    ProofLog: ZkLogstarProof,
+  }): SignMessageForRound3 {
+    const msg = new SignMessageForRound3(
+      from, to, DeltaD, DeltaF, DeltaProof, ChiD, ChiF, ChiProof, ProofLog
+    );
+    Object.freeze(msg);
+    return msg;
+  }
+
+  public static fromJSON(json: SignMessageForRound3JSON): SignMessageForRound3 {
+    return SignMessageForRound3.from({
+      from: json.from as PartyId,
+      to: json.to as PartyId,
+      DeltaD: BigInt(`0x${json.DeltaDhex}`),
+      DeltaF: BigInt(`0x${json.DeltaFhex}`),
+      DeltaProof: ZkAffgProof.fromJSON(json.DeltaProof),
+      ChiD: BigInt(`0x${json.ChiDhex}`),
+      ChiF: BigInt(`0x${json.ChiFhex}`),
+      ChiProof: ZkAffgProof.fromJSON(json.ChiProof),
+      ProofLog: ZkLogstarProof.fromJSON(json.ProofLog),
+    });
+  }
+
+  public toJSON(): SignMessageForRound3JSON {
+    return {
+      from: this.from,
+      to: this.to,
+      DeltaDhex: this.DeltaD.toString(16),
+      DeltaFhex: this.DeltaF.toString(16),
+      DeltaProof: this.DeltaProof.toJSON(),
+      ChiDhex: this.ChiD.toString(16),
+      ChiFhex: this.ChiF.toString(16),
+      ChiProof: this.ChiProof.toJSON(),
+      ProofLog: this.ProofLog.toJSON(),
+    };
+  }
 };
 
 export type SignInputForRound3 = {
@@ -165,11 +293,13 @@ export class SignerRound3 {
     };
 
     const DeltaShareScalar = Fn.mod(DeltaShare);
-    const broadcasts: [SignBroadcastForRound4] = [{
-      from: this.session.selfId,
-      DeltaShare: DeltaShareScalar,
-      BigDeltaShare: BigDeltaShare.toAffine(),
-    }];
+    const broadcasts: [SignBroadcastForRound4] = [
+      SignBroadcastForRound4.from({
+        from: this.session.selfId,
+        DeltaShare: DeltaShareScalar,
+        BigDeltaShare: BigDeltaShare.toAffine(),
+      }),
+    ];
 
     const messages: Array<SignMessageForRound4> = [];
     const pubData = this.roundInput.inputForRound2.inputForRound1.partiesPublic
@@ -184,11 +314,11 @@ export class SignerRound3 {
       const proof = zkLogstarCreateProof(
         pub, priv, this.session.cloneHashForId(this.session.selfId),
       );
-      messages.push({
+      messages.push(SignMessageForRound4.from({
         from: this.session.selfId,
         to: partyId,
         ProofLog: proof,
-      });
+      }));
     });
 
     this.session.currentRound = 'round4';

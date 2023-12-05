@@ -145,12 +145,14 @@ export const zkSchProve = (
 };
 
 export const zkSchVerifyResponse = (
-  z: ZkSchResponse,
+  z: ZkSchResponse | null,
   hasher: Hasher,
   pubPoint: AffinePoint,
   commitment: ZkSchCommitment,
   genIn?: AffinePoint,
 ): boolean => {
+  if (!z) { return false; }
+
   const gen = genIn ?
     secp256k1.ProjectivePoint.fromAffine(genIn) :
     secp256k1.ProjectivePoint.BASE;

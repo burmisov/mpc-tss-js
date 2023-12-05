@@ -2,7 +2,7 @@ import { secp256k1 } from "@noble/curves/secp256k1";
 import { modMultiply, modPow } from "bigint-crypto-utils";
 
 import { isInIntervalLeps, isInIntervalLprimeEps, isValidModN } from "../arith.js";
-import { AffinePoint } from "../common.types.js";
+import { AffinePoint, AffinePointJSON } from "../common.types.js";
 import { PaillierPublicKey, paillierAdd, paillierMultiply } from "../paillier.js";
 import { PedersenParams } from "../pedersen.js";
 import {
@@ -11,7 +11,7 @@ import {
 } from "../sample.js";
 import Fn from "../Fn.js";
 import { Hasher } from "../Hasher.js";
-import { isIdentity } from "../curve.js";
+import { isIdentity, pointFromJSON, pointToJSON } from "../curve.js";
 
 export type ZkAffgPublic = {
   Kv: bigint; // ciphertext
@@ -40,14 +40,112 @@ export type ZkAffgCommitment = {
   T: bigint;
 };
 
-export type ZkAffgProof = {
-  commitment: ZkAffgCommitment;
-  Z1: bigint;
-  Z2: bigint;
-  Z3: bigint;
-  Z4: bigint;
-  W: bigint;
-  Wy: bigint;
+export type ZkAffgProofJSON = {
+  commitment: {
+    Adec: string,
+    Bx: AffinePointJSON,
+    Bydec: string,
+    Edec: string,
+    Sdec: string,
+    Fdec: string,
+    Tdec: string,
+  },
+  Z1dec: string,
+  Z2dec: string,
+  Z3dec: string,
+  Z4dec: string,
+  Wdec: string,
+  Wydec: string,
+};
+
+export class ZkAffgProof {
+  public readonly commitment: ZkAffgCommitment;
+  public readonly Z1: bigint;
+  public readonly Z2: bigint;
+  public readonly Z3: bigint;
+  public readonly Z4: bigint;
+  public readonly W: bigint;
+  public readonly Wy: bigint;
+
+  private constructor(
+    commitment: ZkAffgCommitment,
+    Z1: bigint,
+    Z2: bigint,
+    Z3: bigint,
+    Z4: bigint,
+    W: bigint,
+    Wy: bigint,
+  ) {
+    this.commitment = commitment;
+    this.Z1 = Z1;
+    this.Z2 = Z2;
+    this.Z3 = Z3;
+    this.Z4 = Z4;
+    this.W = W;
+    this.Wy = Wy;
+  }
+
+  public static from({
+    commitment,
+    Z1,
+    Z2,
+    Z3,
+    Z4,
+    W,
+    Wy,
+  }: {
+    commitment: ZkAffgCommitment,
+    Z1: bigint,
+    Z2: bigint,
+    Z3: bigint,
+    Z4: bigint,
+    W: bigint,
+    Wy: bigint,
+  }): ZkAffgProof {
+    const proof = new ZkAffgProof(commitment, Z1, Z2, Z3, Z4, W, Wy);
+    Object.freeze(proof);
+    return proof;
+  }
+
+  public static fromJSON(json: ZkAffgProofJSON): ZkAffgProof {
+    return ZkAffgProof.from({
+      commitment: {
+        A: BigInt(json.commitment.Adec),
+        Bx: pointFromJSON(json.commitment.Bx),
+        By: BigInt(json.commitment.Bydec),
+        E: BigInt(json.commitment.Edec),
+        S: BigInt(json.commitment.Sdec),
+        F: BigInt(json.commitment.Fdec),
+        T: BigInt(json.commitment.Tdec),
+      },
+      Z1: BigInt(json.Z1dec),
+      Z2: BigInt(json.Z2dec),
+      Z3: BigInt(json.Z3dec),
+      Z4: BigInt(json.Z4dec),
+      W: BigInt(json.Wdec),
+      Wy: BigInt(json.Wydec),
+    });
+  }
+
+  public toJSON(): ZkAffgProofJSON {
+    return {
+      commitment: {
+        Adec: this.commitment.A.toString(),
+        Bx: pointToJSON(this.commitment.Bx),
+        Bydec: this.commitment.By.toString(),
+        Edec: this.commitment.E.toString(),
+        Sdec: this.commitment.S.toString(),
+        Fdec: this.commitment.F.toString(),
+        Tdec: this.commitment.T.toString(),
+      },
+      Z1dec: this.Z1.toString(),
+      Z2dec: this.Z2.toString(),
+      Z3dec: this.Z3.toString(),
+      Z4dec: this.Z4.toString(),
+      Wdec: this.W.toString(),
+      Wydec: this.Wy.toString(),
+    };
+  }
 };
 
 export const zkAffgIsProofValid = (
@@ -123,9 +221,9 @@ export const zkAffgCreateProof = (
     N1,
   );
 
-  return {
+  return ZkAffgProof.from({
     commitment, Z1, Z2, Z3, Z4, W, Wy,
-  };
+  });
 }
 
 export const zkAffgVerifyProof = (

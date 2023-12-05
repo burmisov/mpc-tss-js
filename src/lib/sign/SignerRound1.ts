@@ -49,10 +49,10 @@ export class SignerRound1 {
     const { ciphertext: K, nonce: KNonce } =
       this.roundInput.partiesPublic[this.session.selfId].paillier.encrypt(KShare);
 
-    const broadcast: SignBroadcastForRound2 = {
+    const broadcast = SignBroadcastForRound2.from({
       from: this.session.selfId,
       K, G,
-    };
+    });
 
     const messages: Array<SignMessageForRound2> = [];
 
@@ -77,11 +77,11 @@ export class SignerRound1 {
           zkPrivate,
           this.session.cloneHashForId(this.session.selfId),
         );
-        const message: SignMessageForRound2 = {
+        const message = SignMessageForRound2.from({
           from: this.session.selfId,
           to: partyId,
           proofEnc: proof,
-        };
+        });
         messages.push(message);
       }
     );

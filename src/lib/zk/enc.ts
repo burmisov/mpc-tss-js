@@ -27,11 +27,76 @@ export type ZkEncCommitment = {
   C: bigint,
 };
 
-export type ZkEncProof = {
-  commitment: ZkEncCommitment,
-  Z1: bigint,
-  Z2: bigint,
-  Z3: bigint,
+export type ZkEncProofJSON = {
+  commitment: {
+    Sdec: string,
+    Adec: string,
+    Cdec: string,
+  },
+  Z1dec: string,
+  Z2dec: string,
+  Z3dec: string,
+};
+
+export class ZkEncProof {
+  public readonly commitment: ZkEncCommitment;
+  public readonly Z1: bigint;
+  public readonly Z2: bigint;
+  public readonly Z3: bigint;
+
+  private constructor(
+    commitment: ZkEncCommitment,
+    Z1: bigint,
+    Z2: bigint,
+    Z3: bigint,
+  ) {
+    this.commitment = commitment;
+    this.Z1 = Z1;
+    this.Z2 = Z2;
+    this.Z3 = Z3;
+  }
+
+  public static from({
+    commitment,
+    Z1,
+    Z2,
+    Z3,
+  }: {
+    commitment: ZkEncCommitment,
+    Z1: bigint,
+    Z2: bigint,
+    Z3: bigint,
+  }): ZkEncProof {
+    const proof = new ZkEncProof(commitment, Z1, Z2, Z3);
+    Object.freeze(proof);
+    return proof;
+  }
+
+  public static fromJSON(json: ZkEncProofJSON): ZkEncProof {
+    return ZkEncProof.from({
+      commitment: {
+        S: BigInt(json.commitment.Sdec),
+        A: BigInt(json.commitment.Adec),
+        C: BigInt(json.commitment.Cdec),
+      },
+      Z1: BigInt(json.Z1dec),
+      Z2: BigInt(json.Z2dec),
+      Z3: BigInt(json.Z3dec),
+    });
+  }
+
+  public toJSON(): ZkEncProofJSON {
+    return {
+      commitment: {
+        Sdec: this.commitment.S.toString(10),
+        Adec: this.commitment.A.toString(10),
+        Cdec: this.commitment.C.toString(10),
+      },
+      Z1dec: this.Z1.toString(10),
+      Z2dec: this.Z2.toString(10),
+      Z3dec: this.Z3.toString(10),
+    };
+  }
 };
 
 export type ZkEncProofSerialized = {
@@ -88,10 +153,7 @@ export const zkEncCreateProof = (
   )
   const Z3 = e * mu + gamma;
 
-  return {
-    commitment,
-    Z1, Z2, Z3,
-  };
+  return ZkEncProof.from({ commitment, Z1, Z2, Z3 });
 };
 
 export const zkEncVerifyProof = (

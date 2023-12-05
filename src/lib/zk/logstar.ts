@@ -1,7 +1,7 @@
 import { secp256k1 } from "@noble/curves/secp256k1";
 
 import { isInIntervalLeps, isValidModN } from "../arith.js";
-import { AffinePoint } from "../common.types.js";
+import { AffinePoint, AffinePointJSON } from "../common.types.js";
 import { PaillierPublicKey, paillierAdd, paillierMultiply } from "../paillier.js";
 import { PedersenParams } from "../pedersen.js";
 import {
@@ -11,7 +11,7 @@ import {
 import Fn from "../Fn.js";
 import { Hasher } from "../Hasher.js";
 import { modMultiply, modPow } from "bigint-crypto-utils";
-import { isIdentity } from "../curve.js";
+import { isIdentity, pointFromJSON, pointToJSON } from "../curve.js";
 
 export type ZkLogstarPublic = {
   C: bigint; // ciphertext
@@ -33,11 +33,79 @@ export type ZkLogstarCommitment = {
   D: bigint;
 };
 
-export type ZkLogstarProof = {
-  commitment: ZkLogstarCommitment;
-  Z1: bigint;
-  Z2: bigint;
-  Z3: bigint;
+export type ZkLogstarProofJSON = {
+  commitment: {
+    Sdec: string,
+    Adec: string,
+    Y: AffinePointJSON,
+    Ddec: string,
+  },
+  Z1dec: string,
+  Z2dec: string,
+  Z3dec: string,
+};
+
+export class ZkLogstarProof {
+  public readonly commitment: ZkLogstarCommitment;
+  public readonly Z1: bigint;
+  public readonly Z2: bigint;
+  public readonly Z3: bigint;
+
+  private constructor(
+    commitment: ZkLogstarCommitment,
+    Z1: bigint,
+    Z2: bigint,
+    Z3: bigint,
+  ) {
+    this.commitment = commitment;
+    this.Z1 = Z1;
+    this.Z2 = Z2;
+    this.Z3 = Z3;
+  }
+
+  public static from({
+    commitment,
+    Z1,
+    Z2,
+    Z3,
+  }: {
+    commitment: ZkLogstarCommitment,
+    Z1: bigint,
+    Z2: bigint,
+    Z3: bigint,
+  }): ZkLogstarProof {
+    const proof = new ZkLogstarProof(commitment, Z1, Z2, Z3);
+    Object.freeze(proof);
+    return proof;
+  }
+
+  public static fromJSON(json: ZkLogstarProofJSON): ZkLogstarProof {
+    return ZkLogstarProof.from({
+      commitment: {
+        S: BigInt(json.commitment.Sdec),
+        A: BigInt(json.commitment.Adec),
+        Y: pointFromJSON(json.commitment.Y),
+        D: BigInt(json.commitment.Ddec),
+      },
+      Z1: BigInt(json.Z1dec),
+      Z2: BigInt(json.Z2dec),
+      Z3: BigInt(json.Z3dec),
+    });
+  }
+
+  public toJSON(): ZkLogstarProofJSON {
+    return {
+      commitment: {
+        Sdec: this.commitment.S.toString(10),
+        Adec: this.commitment.A.toString(10),
+        Y: pointToJSON(this.commitment.Y),
+        Ddec: this.commitment.D.toString(10),
+      },
+      Z1dec: this.Z1.toString(10),
+      Z2dec: this.Z2.toString(10),
+      Z3dec: this.Z3.toString(10),
+    };
+  }
 };
 
 export const zkLogstarIsProofValid = (
@@ -88,12 +156,12 @@ export const zkLogstarCreateProof = (
   );
   const Z3 = e * mu + gamma;
 
-  const proof: ZkLogstarProof = {
+  const proof = ZkLogstarProof.from({
     commitment,
     Z1,
     Z2,
     Z3,
-  };
+  });
 
   return proof;
 }
