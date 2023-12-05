@@ -5,10 +5,10 @@ import * as ethers from 'ethers';
 
 import { KeygenSession } from './KeygenSession.js';
 import { KeygenRound1, KeygenRound1Output } from './KeygenRound1.js';
-import { KeygenRound2, KeygenRound2Output } from './KeygenRound2.js';
-import { KeygenRound3, KeygenRound3Output } from './KeygenRound3.js';
-import { KeygenRound4, KeygenRound4Output } from './KeygenRound4.js';
-import { KeygenRound5, KeygenRound5Output } from './KeygenRound5.js';
+import { KeygenBroadcastForRound2, KeygenRound2, KeygenRound2Output } from './KeygenRound2.js';
+import { KeygenBroadcastForRound3, KeygenRound3, KeygenRound3Output } from './KeygenRound3.js';
+import { KeygenBroadcastForRound4, KeygenDirectMessageForRound4, KeygenRound4, KeygenRound4Output } from './KeygenRound4.js';
+import { KeygenBroadcastForRound5, KeygenRound5, KeygenRound5Output } from './KeygenRound5.js';
 import { ethAddress } from '../eth.js';
 import { Hasher } from '../Hasher.js';
 
@@ -73,7 +73,7 @@ describe('keygen 2/3', async () => {
       ...outputRound1A.broadcasts,
       ...outputRound1B.broadcasts,
       ...outputRound1C.broadcasts,
-    ];
+    ].map((b) => b.toJSON()).map((b) => KeygenBroadcastForRound2.fromJSON(b));
     assert.equal(allBroadcasts.length, 3);
 
     const keygenRound2A = new KeygenRound2(sessionA, outputRound1A.inputForRound2);
@@ -94,7 +94,7 @@ describe('keygen 2/3', async () => {
       ...outputRound2A.broadcasts,
       ...outputRound2B.broadcasts,
       ...outputRound2C.broadcasts,
-    ];
+    ].map((b) => b.toJSON()).map((b) => KeygenBroadcastForRound3.fromJSON(b));
     assert.equal(allBroadcasts.length, 3);
 
     const keygenRound3A = new KeygenRound3(sessionA, outputRound2A.inputForRound3);
@@ -115,13 +115,13 @@ describe('keygen 2/3', async () => {
       ...outputRound3A.broadcasts,
       ...outputRound3B.broadcasts,
       ...outputRound3C.broadcasts,
-    ];
+    ].map((b) => b.toJSON()).map((b) => KeygenBroadcastForRound4.fromJSON(b));
     assert.equal(allBroadcasts.length, 3);
     const allMessages = [
       ...outputRound3A.directMessages,
       ...outputRound3B.directMessages,
       ...outputRound3C.directMessages,
-    ];
+    ].map((m) => m.toJSON()).map((m) => KeygenDirectMessageForRound4.fromJSON(m));
     assert.equal(allMessages.length, 6);
 
     const keygenRound4A = new KeygenRound4(sessionA, outputRound3A.inputForRound4);
@@ -148,7 +148,7 @@ describe('keygen 2/3', async () => {
       ...outputRound4A.broadcasts,
       ...outputRound4B.broadcasts,
       ...outputRound4C.broadcasts,
-    ];
+    ].map((b) => b.toJSON()).map((b) => KeygenBroadcastForRound5.fromJSON(b));
     assert.equal(allBroadcasts.length, 3);
 
     const keygenRound5A = new KeygenRound5(sessionA, outputRound4A.inputForRound5);

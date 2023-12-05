@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { secp256k1 } from '@noble/curves/secp256k1';
 import * as ethers from 'ethers';
 
-import { AffinePointSerialized } from '../common.types.js';
+import { AffinePointJSON } from '../common.types.js';
 import {
   PartyPublicKeyConfigJSON, PartySecretKeyConfig, PartySecretKeyConfigJSON,
 } from "../keyConfig.js";
@@ -163,7 +163,7 @@ describe('sign 3/3 (all parties)', () => {
   }
 
   const checkCurvePointFixture = (
-    publicSerialized: AffinePointSerialized,
+    publicSerialized: AffinePointJSON,
     privateHex: string,
   ) => {
     const xbig = BigInt('0x' + publicSerialized.xHex);

@@ -8,7 +8,7 @@ import { PaillierSecretKey } from "../paillier.js";
 import { validatePaillierPrime } from '../paillierKeygen.js';
 import { Hasher } from "../Hasher.js";
 import {
-  ZkModPrivate, ZkModPublic,
+  ZkModPrivate, ZkModProof, ZkModPublic,
   zkModChallenge, zkModCreateProof, zkModFourthRootExponent,
   zkModIsProofValid, zkModMakeQuadraticResidue, zkModVerifyProof,
 } from './mod.js';
@@ -77,11 +77,11 @@ describe("zk/mod", async () => {
     const verified = await zkModVerifyProof(proof, pub, hasher.clone());
     assert.equal(verified, true, "proof should be verified");
 
-    proof.W = 0n;
-    for (const r of proof.Responses) {
-      r.X = 0n;
-    }
-    const verified2 = await zkModVerifyProof(proof, pub, hasher.clone());
+    const badProof = ZkModProof.from({
+      W: 0n,
+      Responses: proof.Responses.map(r => ({ ...r, X: 0n, }))
+    });
+    const verified2 = await zkModVerifyProof(badProof, pub, hasher.clone());
     assert.equal(verified2, false, "corrupted proof should fail");
   });
 });

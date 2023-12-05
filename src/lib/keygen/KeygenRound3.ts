@@ -1,30 +1,123 @@
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import { Hasher } from "../Hasher.js";
-import { AffinePoint } from "../common.types.js";
+import { AffinePoint, AffinePointJSON } from "../common.types.js";
+import { pointFromJSON, pointToJSON } from "../curve.js";
 import { PartyId, partyIdToScalar } from "../keyConfig.js";
 import { PaillierPublicKey } from "../paillier.js";
 import { paillierValidateN } from '../paillierKeygen.js';
-import { PedersenParams } from "../pedersen.js";
-import { Exponent } from "../polynomial/exponent.js";
+import { PedersenParametersJSON, PedersenParams } from "../pedersen.js";
+import { Exponent, ExponentJSON } from "../polynomial/exponent.js";
 import { ZkFacPrivate, ZkFacPublic, zkFacCreateProof } from "../zk/fac.js";
 import { ZkModPrivate, ZkModPublic, zkModCreateProof } from "../zk/mod.js";
 import { ZkPrmPrivate, ZkPrmPublic, zkPrmCreateProof } from "../zk/prm.js";
-import { ZkSchCommitment } from "../zk/zksch.js";
+import { ZkSchCommitment, ZkSchCommitmentJSON } from "../zk/zksch.js";
 import { KeygenInputForRound2 } from "./KeygenRound2.js";
 import {
   KeygenBroadcastForRound4, KeygenDirectMessageForRound4, KeygenInputForRound4,
 } from "./KeygenRound4.js";
 import { KeygenSession } from "./KeygenSession.js";
+import { JSONable } from "../serde.js";
 
-export type KeygenBroadcastForRound3 = {
-  from: PartyId,
-  RID: bigint,
-  C: bigint,
-  vssPolynomial: Exponent,
-  schnorrCommitment: ZkSchCommitment,
-  elGamalPublic: AffinePoint,
-  pedersenPublic: PedersenParams,
-  decommitment: Uint8Array,
+export type KeygenBroadcastForRound3JSON = {
+  from: PartyId;
+  RIDhex: string;
+  Chex: string;
+  vssPolynomial: ExponentJSON;
+  schnorrCommitment: ZkSchCommitmentJSON;
+  elGamalPublic: AffinePointJSON;
+  pedersenPublic: PedersenParametersJSON;
+  decommitmentHex: string;
 };
+
+export class KeygenBroadcastForRound3 implements JSONable {
+  public readonly from: PartyId;
+  public readonly RID: bigint;
+  public readonly C: bigint;
+  public readonly vssPolynomial: Exponent;
+  public readonly schnorrCommitment: ZkSchCommitment;
+  public readonly elGamalPublic: AffinePoint;
+  public readonly pedersenPublic: PedersenParams;
+  public readonly decommitment: Uint8Array;
+
+  private constructor(
+    from: PartyId,
+    RID: bigint,
+    C: bigint,
+    vssPolynomial: Exponent,
+    schnorrCommitment: ZkSchCommitment,
+    elGamalPublic: AffinePoint,
+    pedersenPublic: PedersenParams,
+    decommitment: Uint8Array
+  ) {
+    this.from = from;
+    this.RID = RID;
+    this.C = C;
+    this.vssPolynomial = vssPolynomial;
+    this.schnorrCommitment = schnorrCommitment;
+    this.elGamalPublic = elGamalPublic;
+    this.pedersenPublic = pedersenPublic;
+    this.decommitment = decommitment;
+  }
+
+  public static from({
+    from,
+    RID,
+    C,
+    vssPolynomial,
+    schnorrCommitment,
+    elGamalPublic,
+    pedersenPublic,
+    decommitment,
+  }: {
+    from: PartyId,
+    RID: bigint,
+    C: bigint,
+    vssPolynomial: Exponent,
+    schnorrCommitment: ZkSchCommitment,
+    elGamalPublic: AffinePoint,
+    pedersenPublic: PedersenParams,
+    decommitment: Uint8Array,
+  }): KeygenBroadcastForRound3 {
+    const b = new KeygenBroadcastForRound3(
+      from,
+      RID,
+      C,
+      vssPolynomial,
+      schnorrCommitment,
+      elGamalPublic,
+      pedersenPublic,
+      decommitment,
+    );
+    Object.freeze(b);
+    return b;
+  }
+
+  public toJSON(): KeygenBroadcastForRound3JSON {
+    return {
+      from: this.from,
+      RIDhex: this.RID.toString(16),
+      Chex: this.C.toString(16),
+      vssPolynomial: this.vssPolynomial.toJSON(),
+      schnorrCommitment: this.schnorrCommitment.toJSON(),
+      elGamalPublic: pointToJSON(this.elGamalPublic),
+      pedersenPublic: this.pedersenPublic.toJSON(),
+      decommitmentHex: bytesToHex(this.decommitment),
+    };
+  }
+
+  public static fromJSON(json: KeygenBroadcastForRound3JSON): KeygenBroadcastForRound3 {
+    return KeygenBroadcastForRound3.from({
+      from: json.from,
+      RID: BigInt(`0x${json.RIDhex}`),
+      C: BigInt(`0x${json.Chex}`),
+      vssPolynomial: Exponent.fromJSON(json.vssPolynomial),
+      schnorrCommitment: ZkSchCommitment.fromJSON(json.schnorrCommitment),
+      elGamalPublic: pointFromJSON(json.elGamalPublic),
+      pedersenPublic: PedersenParams.fromJSON(json.pedersenPublic),
+      decommitment: hexToBytes(json.decommitmentHex),
+    });
+  }
+}
 
 export type KeygenInputForRound3 = {
   inputForRound2: KeygenInputForRound2,
@@ -136,11 +229,13 @@ export class KeygenRound3 {
     };
     const prmProof = zkPrmCreateProof(prmPriv, prmPub, hashWithRidAndPartyId.clone());
 
-    const broadcasts: Array<KeygenBroadcastForRound4> = [{
-      from: this.session.selfId,
-      modProof,
-      prmProof,
-    }];
+    const broadcasts: Array<KeygenBroadcastForRound4> = [
+      KeygenBroadcastForRound4.from({
+        from: this.session.selfId,
+        modProof,
+        prmProof,
+      }),
+    ];
 
     const directMessages: Array<KeygenDirectMessageForRound4> = [];
     this.session.partyIds.forEach(j => {
@@ -161,12 +256,12 @@ export class KeygenRound3 {
       const share = vssSecret.evaluate(partyIdToScalar(j));
       const { ciphertext: C } = this.PaillierPublic[j].encrypt(share);
 
-      directMessages.push({
+      directMessages.push(KeygenDirectMessageForRound4.from({
         from: this.session.selfId,
         to: j,
         share: C,
         facProof,
-      });
+      }));
     });
 
     this.session.hasher.update(rid);

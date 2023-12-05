@@ -1,5 +1,5 @@
 import { secp256k1 } from '@noble/curves/secp256k1';
-import { AffinePoint, AffinePointSerialized } from './common.types.js';
+import { AffinePoint, AffinePointJSON } from './common.types.js';
 import {
   PaillierPublicKey, PaillierPublicKeyJSON,
   PaillierSecretKey, PaillierSecretKeyJSON,
@@ -96,8 +96,8 @@ export class PartyPublicKeyConfig implements Hashable {
 
 export type PartyPublicKeyConfigJSON = {
   partyId: string,
-  ecdsa: AffinePointSerialized
-  elgamal: AffinePointSerialized,
+  ecdsa: AffinePointJSON
+  elgamal: AffinePointJSON,
   paillier: PaillierPublicKeyJSON,
   pedersen: PedersenParametersJSON,
 };

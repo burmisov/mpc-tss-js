@@ -1,5 +1,5 @@
 import { secp256k1 } from "@noble/curves/secp256k1";
-import { AffinePoint, AffinePointSerialized, ProjectivePoint } from "./common.types.js";
+import { AffinePoint, AffinePointJSON, ProjectivePoint } from "./common.types.js";
 import { bitLength } from "bigint-crypto-utils";
 import { bytesToNumberBE, numberToBytesBE } from "@noble/curves/abstract/utils";
 import Fn from "./Fn.js";
@@ -9,14 +9,14 @@ export const isIdentity = (point: ProjectivePoint) => {
   return (point.px === 0n && point.py === 0n) || point.pz === 0n;
 };
 
-export const pointToJSON = (point: AffinePoint): AffinePointSerialized => {
+export const pointToJSON = (point: AffinePoint): AffinePointJSON => {
   return {
     xHex: point.x.toString(16),
     yHex: point.y.toString(16),
   };
 };
 
-export const pointFromJSON = (point: AffinePointSerialized): AffinePoint => {
+export const pointFromJSON = (point: AffinePointJSON): AffinePoint => {
   return {
     x: BigInt(`0x${point.xHex}`),
     y: BigInt(`0x${point.yHex}`),

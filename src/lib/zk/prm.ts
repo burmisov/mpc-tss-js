@@ -4,6 +4,7 @@ import { Hasher } from "../Hasher.js";
 import { isValidModN } from "../arith.js";
 import { PedersenParams } from "../pedersen.js";
 import { STAT_PARAM, sampleModN } from "../sample.js";
+import { JSONable } from "../serde.js";
 
 export type ZkPrmPublic = {
   Aux: PedersenParams;
@@ -16,9 +17,38 @@ export type ZkPrmPrivate = {
   Q: bigint;
 };
 
-export type ZkPrmProof = {
-  As: bigint[]; // size StatParam = 80
-  Zs: bigint[]; // size StatParam = 80
+export type ZkPrmProofJSON = {
+  AsHex: string[];
+  ZsHex: string[];
+};
+
+export class ZkPrmProof implements JSONable {
+  public readonly As: bigint[]; // size StatParam = 80
+  public readonly Zs: bigint[]; // size StatParam = 80
+
+  private constructor(As: bigint[], Zs: bigint[]) {
+    this.As = As;
+    this.Zs = Zs;
+  }
+
+  public static from({ As, Zs }: { As: bigint[], Zs: bigint[] }): ZkPrmProof {
+    const p = new ZkPrmProof(As, Zs);
+    Object.freeze(p);
+    return p;
+  }
+
+  public static fromJSON(json: ZkPrmProofJSON): ZkPrmProof {
+    const { AsHex, ZsHex } = json;
+    const As = AsHex.map((h) => BigInt(`0x${h}`));
+    const Zs = ZsHex.map((h) => BigInt(`0x${h}`));
+    return ZkPrmProof.from({ As, Zs });
+  }
+
+  public toJSON(): ZkPrmProofJSON {
+    const AsHex = this.As.map((a) => a.toString(16));
+    const ZsHex = this.Zs.map((z) => z.toString(16));
+    return { AsHex, ZsHex };
+  }
 };
 
 export const zkPrmIsProofValid = (proof: ZkPrmProof, pub: ZkPrmPublic): boolean => {
@@ -55,7 +85,7 @@ export const zkPrmCreateProof = (
     Zs.push(z);
   }
 
-  return { As, Zs };
+  return ZkPrmProof.from({ As, Zs });
 }
 
 export const zkPrmVerifyProof = (

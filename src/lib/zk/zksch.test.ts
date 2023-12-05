@@ -13,6 +13,9 @@ describe("zk/sch", () => {
     const [x, X] = sampleScalarPointPair();
 
     const proof = zkSchProve(a, hasher.clone(), X, x);
+    if (!proof) {
+      throw new Error('proof should not be null');
+    }
     assert(
       zkSchVerifyResponse(proof, hasher.clone(), X, a.commitment),
       'failed to verify response',
@@ -26,6 +29,9 @@ describe("zk/sch", () => {
     const a = zkSchCreateRandomness();
     const [x, X] = [sampleScalar(), secp256k1.ProjectivePoint.ZERO.toAffine()];
     const proof = zkSchProve(a, hasher.clone(), X, x);
+    if (!proof) {
+      throw new Error('proof should not be null');
+    }
     assert.equal(
       zkSchVerifyResponse(proof, hasher.clone(), X, a.commitment),
       false,

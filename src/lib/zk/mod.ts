@@ -6,6 +6,7 @@ import { bytesToNumberBE } from "@noble/curves/abstract/utils";
 import { isValidModN, jacobi } from "../arith.js";
 import { Hasher } from "../Hasher.js";
 import { STAT_PARAM, sampleQNR } from "../sample.js";
+import { JSONable } from "../serde.js";
 
 export type ZkModPublic = {
   N: bigint;
@@ -24,9 +25,61 @@ export type ZkModResponse = {
   Z: bigint;
 };
 
-export type ZkModProof = {
-  W: bigint;
-  Responses: ZkModResponse[]; // len = STAT_PARAM = 80
+export type ZkModProofJSON = {
+  Whex: string;
+  Responses: Array<{
+    A: boolean;
+    B: boolean;
+    Xhex: string;
+    Zhex: string;
+  }>;
+};
+
+export class ZkModProof implements JSONable {
+  public readonly W: bigint;
+  public readonly Responses: ZkModResponse[]; // len = STAT_PARAM = 80
+
+  private constructor(W: bigint, Responses: ZkModResponse[]) {
+    this.W = W;
+    this.Responses = Responses;
+  }
+
+  public static from({ W, Responses }: {
+    W: bigint,
+    Responses: ZkModResponse[],
+  }): ZkModProof {
+    const p = new ZkModProof(W, Responses);
+    Object.freeze(p);
+    return p;
+  }
+
+  public static fromJSON(json: ZkModProofJSON): ZkModProof {
+    const { Whex, Responses } = json;
+    const W = BigInt(`0x${Whex}`);
+    const rs = Responses.map((r) => {
+      const { A, B } = r;
+      const X = BigInt(`0x${r.Xhex}`);
+      const Z = BigInt(`0x${r.Zhex}`);
+      return { A, B, X, Z };
+    });
+    return ZkModProof.from({ W, Responses: rs });
+  }
+
+  public toJSON(): ZkModProofJSON {
+    const Responses = this.Responses.map((r) => {
+      const { A, B, X, Z } = r;
+      return {
+        A,
+        B,
+        Xhex: X.toString(16),
+        Zhex: Z.toString(16),
+      };
+    });
+    return {
+      Whex: this.W.toString(16),
+      Responses,
+    };
+  }
 };
 
 const isQRmodPQ = (
@@ -111,7 +164,7 @@ export const zkModCreateProof = (
     return { A, B, X, Z };
   });
 
-  return { W: w, Responses: rs };
+  return ZkModProof.from({ W: w, Responses: rs });
 };
 
 const verifyResponse = (

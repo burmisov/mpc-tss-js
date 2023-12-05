@@ -1,6 +1,6 @@
 import { secp256k1 } from "@noble/curves/secp256k1";
 
-import { AffinePoint, AffinePointSerialized, ProjectivePoint } from "../common.types.js";
+import { AffinePoint, AffinePointJSON, ProjectivePoint } from "../common.types.js";
 import { Polynomial } from "./polynomial.js";
 import Fn from "../Fn.js";
 import { Hashable, IngestableBasic } from "../Hasher.js";
@@ -9,7 +9,7 @@ import { pointFromJSON, pointToJSON } from "../curve.js";
 
 export type ExponentJSON = {
   isConstant: boolean,
-  coefficients: Array<AffinePointSerialized>,
+  coefficients: Array<AffinePointJSON>,
 };
 
 export class Exponent implements Hashable, JSONable {

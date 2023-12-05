@@ -78,10 +78,12 @@ export class KeygenRound1 {
       selfPedersenPublic,
     ]);
 
-    const broadcasts: Array<KeygenBroadcastForRound2> = [{
-      from: this.session.selfId,
-      commitment: selfCommitment,
-    }];
+    const broadcasts: Array<KeygenBroadcastForRound2> = [
+      KeygenBroadcastForRound2.from({
+        from: this.session.selfId,
+        commitment: selfCommitment,
+      }),
+    ];
 
     return {
       broadcasts,

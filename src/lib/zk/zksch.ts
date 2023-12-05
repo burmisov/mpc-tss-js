@@ -1,22 +1,75 @@
 import { secp256k1 } from "@noble/curves/secp256k1";
 
 import { Hasher } from "../Hasher.js";
-import { AffinePoint } from "../common.types.js";
+import { AffinePoint, AffinePointJSON } from "../common.types.js";
 import { sampleScalar } from "../sample.js";
-import { isIdentity } from "../curve.js";
+import { isIdentity, pointFromJSON, pointToJSON } from "../curve.js";
 import Fn from "../Fn.js";
+import { JSONable } from "../serde.js";
 
 export type ZkSchRandomness = {
   a: bigint,
   commitment: ZkSchCommitment,
 };
 
-export type ZkSchResponse = {
-  Z: bigint,
-} | null;
+export type ZkSchResponseJSON = {
+  Zhex: string;
+};
 
-export type ZkSchCommitment = {
-  C: AffinePoint,
+export class ZkSchResponse implements JSONable {
+  public readonly Z: bigint;
+
+  private constructor(Z: bigint) {
+    this.Z = Z;
+  }
+
+  public static from({ Z }: { Z: bigint }): ZkSchResponse {
+    const c = new ZkSchResponse(Z);
+    Object.freeze(c);
+    return c;
+  }
+
+  public toJSON(): ZkSchResponseJSON {
+    return {
+      Zhex: this.Z.toString(16),
+    };
+  }
+
+  public static fromJSON(json: ZkSchResponseJSON): ZkSchResponse {
+    return ZkSchResponse.from({
+      Z: BigInt(`0x${json.Zhex}`),
+    });
+  }
+};
+
+export type ZkSchCommitmentJSON = {
+  C: AffinePointJSON;
+};
+
+export class ZkSchCommitment implements JSONable {
+  public readonly C: AffinePoint;
+
+  private constructor(C: AffinePoint) {
+    this.C = C;
+  }
+
+  public static from({ C }: { C: AffinePoint }): ZkSchCommitment {
+    const c = new ZkSchCommitment(C);
+    Object.freeze(c);
+    return c;
+  }
+
+  public toJSON(): ZkSchCommitmentJSON {
+    return {
+      C: pointToJSON(this.C),
+    };
+  }
+
+  public static fromJSON(json: ZkSchCommitmentJSON): ZkSchCommitment {
+    return ZkSchCommitment.from({
+      C: pointFromJSON(json.C),
+    });
+  }
 };
 
 export type ZkSchProof = {
@@ -29,9 +82,11 @@ export const zkSchCreateProof = (
   pubPoint: AffinePoint,
   priv: bigint,
   gen: AffinePoint,
-): ZkSchProof => {
+): ZkSchProof | null => {
   const a = zkSchCreateRandomness(gen);
   const Z = zkSchProve(a, hasher, pubPoint, priv, gen);
+
+  if (!Z) { return null; };
 
   return {
     C: a.commitment,
@@ -44,9 +99,9 @@ export const zkSchCreateRandomness = (genIn?: AffinePoint): ZkSchRandomness => {
     secp256k1.ProjectivePoint.fromAffine(genIn) :
     secp256k1.ProjectivePoint.BASE;
   const a = sampleScalar();
-  const commitment: ZkSchCommitment = {
+  const commitment = ZkSchCommitment.from({
     C: gen.multiply(a).toAffine(),
-  };
+  });
   return { a, commitment };
 }
 
@@ -73,7 +128,7 @@ export const zkSchProve = (
   pubPoint: AffinePoint,
   secret: bigint,
   genIn?: AffinePoint,
-): ZkSchResponse => {
+): ZkSchResponse | null => {
   const gen = genIn ?
     secp256k1.ProjectivePoint.fromAffine(genIn) :
     secp256k1.ProjectivePoint.BASE;
@@ -86,7 +141,7 @@ export const zkSchProve = (
   const es = Fn.mul(e, secret);
   const Z = Fn.add(es, r.a);
 
-  return { Z };
+  return ZkSchResponse.from({ Z });
 };
 
 export const zkSchVerifyResponse = (
