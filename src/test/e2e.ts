@@ -13,7 +13,7 @@ import { KeygenRound3, KeygenRound3Output } from '../lib/keygen/KeygenRound3.js'
 import { KeygenRound4, KeygenRound4Output } from '../lib/keygen/KeygenRound4.js';
 import { KeygenRound5, KeygenRound5Output } from '../lib/keygen/KeygenRound5.js';
 import { SignSession } from '../lib/sign/SignSession.js';
-import { SignRequestJSON, deserializeSignRequest } from '../lib/sign/sign.js';
+import { SignRequestJSON, SignRequest } from '../lib/sign/sign.js';
 import { SignPartyOutputRound1, SignerRound1 } from '../lib/sign/SignerRound1.js';
 import { SignPartyOutputRound2, SignerRound2 } from '../lib/sign/SignerRound2.js';
 import { SignPartyOutputRound3, SignerRound3 } from '../lib/sign/SignerRound3.js';
@@ -31,7 +31,7 @@ test('keygen + sign', async () => {
     messageHex: bytesToHex(keccak_256(messageToSign)),
     signerIds,
   };
-  const signRequest = deserializeSignRequest(signRequestSerialized);
+  const signRequest = SignRequest.fromJSON(signRequestSerialized);
   console.log('partyIds', partyIds);
   console.log('threshold', threshold);
   console.log('signerIds', signerIds);

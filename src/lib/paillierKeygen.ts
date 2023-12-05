@@ -1,3 +1,4 @@
+import { bytesToNumberBE } from "@noble/curves/abstract/utils";
 import { bitLength, isProbablyPrime, randBytesSync } from "bigint-crypto-utils";
 
 const SEC_PARAM = 256;
@@ -31,7 +32,7 @@ const tryBlumPrime = async (): Promise<bigint | null> => {
   bytes[bytes.length - 1] |= 3;
   bytes[0] |= 192;
 
-  const base = BigInt('0x' + bytes.toString('hex'));
+  const base = bytesToNumberBE(bytes);
 
   const sieve = new Uint8Array(SIEVE_SIZE).fill(1);
 

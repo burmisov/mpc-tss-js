@@ -22,7 +22,7 @@ export const sampleUnitModN = (modulus: bigint): bigint => {
   const randByteLength = Math.floor((bitLength(modulus) + 7) / 8);
   for (let i = 0; i < MAX_ITERATIONS; i++) {
     const nonceBits = randBytesSync(randByteLength);
-    const nonce = BigInt('0x' + nonceBits.toString('hex'));
+    const nonce = bytesToNumberBE(nonceBits);
     const isUnit = (gcd(nonce, modulus) === 1n);
     if (isUnit) {
       return nonce;
@@ -83,7 +83,7 @@ export const sampleIntervalLN2 = (): bigint => {
 
 export const sampleNeg = (bits: number): bigint => {
   const randomBits = randBitsSync(bits + 1);
-  const bigRandomBits = BigInt('0x' + randomBits.toString('hex'));
+  const bigRandomBits = bytesToNumberBE(randomBits);
   const sign = bigRandomBits & 1n;
   const rest = bigRandomBits >> 1n;
   const result = Fn.mod(sign ? -rest : rest);
