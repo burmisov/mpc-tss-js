@@ -9,6 +9,7 @@ import { lagrange } from './polynomial/lagrange.js';
 import { bytesToNumberBE } from '@noble/curves/abstract/utils';
 import { utf8ToBytes } from '@noble/hashes/utils';
 import { Hashable, IngestableBasic } from './Hasher.js';
+import { pointFromJSON, pointToJSON } from './curve.js';
 
 export type PartyId = string;
 
@@ -38,14 +39,8 @@ export class PartyPublicKeyConfig implements Hashable {
   ): PartyPublicKeyConfig {
     const pcfg = new PartyPublicKeyConfig(
       serialized.partyId,
-      {
-        x: BigInt('0x' + serialized.ecdsa.xHex),
-        y: BigInt('0x' + serialized.ecdsa.yHex),
-      },
-      {
-        x: BigInt('0x' + serialized.elgamal.xHex),
-        y: BigInt('0x' + serialized.elgamal.yHex),
-      },
+      pointFromJSON(serialized.ecdsa),
+      pointFromJSON(serialized.elgamal),
       PaillierPublicKey.fromJSON(serialized.paillier),
       PedersenParams.fromJSON(serialized.pedersen),
     );
@@ -80,14 +75,8 @@ export class PartyPublicKeyConfig implements Hashable {
   public toJSON(): PartyPublicKeyConfigJSON {
     return {
       partyId: this.partyId,
-      ecdsa: {
-        xHex: this.ecdsa.x.toString(16),
-        yHex: this.ecdsa.y.toString(16),
-      },
-      elgamal: {
-        xHex: this.elgamal.x.toString(16),
-        yHex: this.elgamal.y.toString(16),
-      },
+      ecdsa: pointToJSON(this.ecdsa),
+      elgamal: pointToJSON(this.elgamal),
       paillier: this.paillier.toJSON(),
       pedersen: this.pedersen.toJSON(),
     };

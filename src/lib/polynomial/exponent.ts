@@ -1,11 +1,18 @@
 import { secp256k1 } from "@noble/curves/secp256k1";
 
-import { AffinePoint, ProjectivePoint } from "../common.types.js";
+import { AffinePoint, AffinePointSerialized, ProjectivePoint } from "../common.types.js";
 import { Polynomial } from "./polynomial.js";
 import Fn from "../Fn.js";
 import { Hashable, IngestableBasic } from "../Hasher.js";
+import { JSONable } from "../serde.js";
+import { pointFromJSON, pointToJSON } from "../curve.js";
 
-export class Exponent implements Hashable {
+export type ExponentJSON = {
+  isConstant: boolean,
+  coefficients: Array<AffinePointSerialized>,
+};
+
+export class Exponent implements Hashable, JSONable {
   public isConstant: boolean;
   public coefficients: Array<ProjectivePoint>;
 
@@ -14,11 +21,27 @@ export class Exponent implements Hashable {
     this.coefficients = coefficients;
   }
 
-  hashable(): IngestableBasic[] {
+  public hashable(): IngestableBasic[] {
     return this.coefficients.flatMap(a => {
       const p = a.toAffine();
       return [p.x, p.y];
     });
+  }
+
+  public toJSON(): ExponentJSON {
+    return {
+      isConstant: this.isConstant,
+      coefficients: this.coefficients.map(a => pointToJSON(a.toAffine())),
+    };
+  }
+
+  public static fromJSON(json: ExponentJSON): Exponent {
+    const coefficients = json.coefficients.map(
+      a => secp256k1.ProjectivePoint.fromAffine(pointFromJSON(a))
+    );
+    const exp = new Exponent(json.isConstant, coefficients);
+    Object.freeze(exp);
+    return exp;
   }
 
   static fromPoly(poly: Polynomial): Exponent {
