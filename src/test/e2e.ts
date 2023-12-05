@@ -20,6 +20,7 @@ import { SignPartyOutputRound3, SignerRound3 } from '../lib/sign/SignerRound3.js
 import { SignPartyOutputRound4, SignerRound4 } from '../lib/sign/SignerRound4.js';
 import { SignPartyOutputRound5, SignerRound5 } from '../lib/sign/SignerRound5.js';
 import { ethAddress, sigEthereum } from '../lib/eth.js';
+import { Hasher } from '../lib/Hasher.js';
 
 test('keygen + sign', async () => {
   // Config
@@ -118,8 +119,8 @@ test('keygen + sign', async () => {
   const outputRound5A = keygenOutputs5.a;
   for (const partyId of partyIds) {
     assert.deepEqual(
-      outputRound5A.UpdatedConfig.publicPartyData,
-      keygenOutputs5[partyId].UpdatedConfig.publicPartyData
+      Hasher.create().update(outputRound5A.UpdatedConfig).digestBigint(),
+      Hasher.create().update(keygenOutputs5[partyId].UpdatedConfig).digestBigint(),
     );
   }
 
